@@ -6,19 +6,23 @@ import { StatusPill } from "@/app/components/StatusPill";
 import { EmailPreview } from "@/app/components/EmailPreview";
 import { CommentThread } from "@/app/components/CommentThread";
 import { ReviewBar } from "@/app/components/ReviewBar";
+import { GeneratePanel } from "@/app/components/GeneratePanel";
 import { tryRenderEmail } from "@/lib/email/render";
 import { requireUser } from "@/lib/auth";
 import { getEmailDetail } from "@/lib/data/emails";
 import { isDbConfigured } from "@/lib/db";
+import { isAiConfigured } from "@/lib/ai/anthropic";
 
 // Auth-gated and per-request DB reads: never statically prerender.
 export const dynamic = "force-dynamic";
+// Generation with Claude can take a while; give the server action room.
+export const maxDuration = 60;
 
 // Next.js 16: params is async.
 export default async function EmailDetailPage({
   params,
 }: PageProps<"/emails/[id]">) {
-  await requireUser();
+  const user = await requireUser();
   const { id } = await params;
   const email = await getEmailDetail(id);
   if (!email) notFound();
@@ -48,8 +52,19 @@ export default async function EmailDetailPage({
         <p className="mt-1 text-sm text-slate-600">{email.previewText}</p>
       </div>
 
-      {/* Live email preview (or a placeholder for types not yet wired up). */}
       <main className="flex-1">
+        {/* Admin: generate the copy with Claude. */}
+        {user.role === "admin" && (
+          <div className="pt-4">
+            <GeneratePanel
+              emailId={email.id}
+              aiEnabled={isAiConfigured}
+              hasCopy={Boolean(email.copy)}
+            />
+          </div>
+        )}
+
+        {/* Live email preview (or a placeholder before it has copy). */}
         <div className="px-4 py-5">
           {html ? (
             <EmailPreview html={html} />

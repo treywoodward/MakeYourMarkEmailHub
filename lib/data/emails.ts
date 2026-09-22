@@ -167,4 +167,28 @@ export async function setEmailStatus(emailId: string, status: EmailStatus) {
   await database.update(emails).set({ status }).where(eq(emails.id, emailId));
 }
 
+/** Save generated copy + rendered HTML onto an email. */
+export async function setEmailContent(
+  emailId: string,
+  content: {
+    copy: EmailCopy;
+    html: string;
+    subject: string;
+    previewText: string;
+    status: EmailStatus;
+  },
+) {
+  const database = requireDb();
+  await database
+    .update(emails)
+    .set({
+      copy: content.copy,
+      html: content.html,
+      subject: content.subject,
+      previewText: content.previewText,
+      status: content.status,
+    })
+    .where(eq(emails.id, emailId));
+}
+
 export { isDbConfigured };
