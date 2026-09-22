@@ -9,7 +9,7 @@ import { listMonthEmails } from "@/lib/data/emails";
 export const dynamic = "force-dynamic";
 
 export default async function ThisMonthPage() {
-  await requireUser();
+  const user = await requireUser();
   const emails = await listMonthEmails(seedMonth);
 
   return (
@@ -22,7 +22,7 @@ export default async function ThisMonthPage() {
           </p>
           <h1 className="font-serif text-xl leading-tight">Dusty Email Hub</h1>
         </div>
-        {authEnabled && <HeaderUser />}
+        {authEnabled && <HeaderUser name={user.name ?? "Signed in"} />}
       </header>
 
       {/* Month heading */}

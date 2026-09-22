@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-
-const authEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export const metadata: Metadata = {
   title: "Dusty Email Hub",
@@ -25,13 +22,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full">
-        {authEnabled ? (
-          <ClerkProvider afterSignOutUrl="/sign-in">{children}</ClerkProvider>
-        ) : (
-          children
-        )}
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

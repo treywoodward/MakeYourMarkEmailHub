@@ -14,7 +14,7 @@ Full product spec: `docs/SPEC.md`. Read it before starting any feature.
 - Next.js (App Router) + TypeScript, deployed on Vercel
 - Tailwind for the dashboard UI (never inside email HTML)
 - Neon: free Postgres, accessed with Drizzle ORM (`lib/db`). `npm run db:push` applies the schema.
-- Clerk: free auth. Wired in `proxy.ts` + `lib/auth.ts`; gated on the publishable key, so the app runs openly until keys are set. Roles (admin/client) live in `profiles.role`, resolved in `lib/auth.ts` (admins via ADMIN_EMAILS).
+- Auth: a simple two-password role gate in `lib/auth.ts` (no third party). `ADMIN_PASSWORD` signs in as admin (Trey), `CLIENT_PASSWORD` as client (Dusty); a HMAC-signed cookie (`AUTH_SECRET`) stores the role. Pages call `requireUser()`. With no passwords set, the app runs open as admin (dev). Works identically on any domain.
 - File uploads (screenshots/PDFs) land on the GHL CDN; a temporary store (Vercel Blob or R2) is added when the ingestion pipeline is built.
 - Anthropic Claude API: copy generation and reading screenshots/PDFs
 - `sharp` for image processing

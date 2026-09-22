@@ -1,20 +1,20 @@
-// Current-user + role resolution. Bridges Clerk (identity) and our profiles
-// table (role). Before Clerk is configured, returns a dev admin so the full UI
-// is visible during setup.
-import { auth, currentUser } from "@clerk/nextjs/server";
+// Simple two-password role gate (replaces Clerk). One password signs you in as
+// admin (Trey), another as client (Dusty). A tamper-proof signed cookie stores
+// the role. No third party, no DNS, works identically on any domain.
+import "server-only";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
-import { db, isDbConfigured } from "@/lib/db";
-import { profiles } from "@/lib/db/schema";
-import type { UserRole } from "@/lib/types";
+import { createHmac, timingSafeEqual } from "crypto";
+import type { UserRole } from "./types";
 
-export const authEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+const COOKIE = "mym_session";
+const secret = process.env.AUTH_SECRET ?? "dev-insecure-secret-change-me";
 
-// Comma-separated emails that should be admins (Trey). Others default to client.
-const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-  .split(",")
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean);
+// The gate is on when at least one password is configured. With none set, the
+// app runs open as admin (handy in local dev before you set passwords).
+export const authEnabled = Boolean(
+  process.env.ADMIN_PASSWORD || process.env.CLIENT_PASSWORD,
+);
 
 export interface AppUser {
   id: string;
@@ -23,46 +23,63 @@ export interface AppUser {
   role: UserRole;
 }
 
-/** The signed-in user with their role. Upserts a profile row on first sign-in. */
+function sign(role: string): string {
+  return createHmac("sha256", secret).update(role).digest("hex");
+}
+
+/** Cookie value: "<role>.<hmac(role)>" so it cannot be forged without AUTH_SECRET. */
+export function tokenFor(role: UserRole): string {
+  return `${role}.${sign(role)}`;
+}
+
+function verify(token: string | undefined): UserRole | null {
+  if (!token) return null;
+  const dot = token.indexOf(".");
+  if (dot < 0) return null;
+  const role = token.slice(0, dot);
+  const sig = token.slice(dot + 1);
+  if (role !== "admin" && role !== "client") return null;
+  const expected = sign(role);
+  if (sig.length !== expected.length) return null;
+  try {
+    if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  } catch {
+    return null;
+  }
+  return role;
+}
+
+function userFor(role: UserRole): AppUser {
+  return role === "admin"
+    ? { id: "admin", email: "", name: "Trey", role: "admin" }
+    : { id: "client", email: "", name: "Dusty", role: "client" };
+}
+
+/** Validate a submitted password and return the role it grants, or null. */
+export function roleForPassword(password: string): UserRole | null {
+  const admin = process.env.ADMIN_PASSWORD;
+  const client = process.env.CLIENT_PASSWORD;
+  if (admin && password === admin) return "admin";
+  if (client && password === client) return "client";
+  return null;
+}
+
 export async function getCurrentAppUser(): Promise<AppUser | null> {
-  if (!authEnabled) {
-    // Dev fallback: act as admin so the whole UI is reachable before setup.
-    return { id: "dev", email: "dev@local", name: "Dev (admin)", role: "admin" };
-  }
-
-  const { userId } = await auth();
-  if (!userId) return null;
-
-  const user = await currentUser();
-  const email = user?.primaryEmailAddress?.emailAddress ?? "";
-  const name = user?.fullName ?? null;
-  let role: UserRole = adminEmails.includes(email.toLowerCase()) ? "admin" : "client";
-
-  if (isDbConfigured && db) {
-    const existing = await db
-      .select()
-      .from(profiles)
-      .where(eq(profiles.id, userId))
-      .limit(1);
-    if (existing[0]) {
-      role = existing[0].role;
-    } else {
-      await db.insert(profiles).values({ id: userId, email, name, role }).onConflictDoNothing();
-    }
-  }
-
-  return { id: userId, email, name, role };
+  if (!authEnabled) return userFor("admin"); // open in dev when no passwords set
+  const store = await cookies();
+  const role = verify(store.get(COOKIE)?.value);
+  return role ? userFor(role) : null;
 }
 
-export async function isAdmin(): Promise<boolean> {
-  const u = await getCurrentAppUser();
-  return u?.role === "admin";
-}
-
-/** Require a signed-in user; redirect to sign-in if not. Use at the top of a
- *  protected page (resource-based protection, Clerk's recommended approach). */
+/** Require a signed-in user; redirect to /sign-in if not. */
 export async function requireUser(): Promise<AppUser> {
   const u = await getCurrentAppUser();
   if (!u) redirect("/sign-in");
   return u;
 }
+
+export async function isAdmin(): Promise<boolean> {
+  return (await getCurrentAppUser())?.role === "admin";
+}
+
+export { COOKIE };
