@@ -11,6 +11,9 @@ import { requireUser } from "@/lib/auth";
 import { getEmailDetail } from "@/lib/data/emails";
 import { isDbConfigured } from "@/lib/db";
 
+// Auth-gated and per-request DB reads: never statically prerender.
+export const dynamic = "force-dynamic";
+
 // Next.js 16: params is async.
 export default async function EmailDetailPage({
   params,

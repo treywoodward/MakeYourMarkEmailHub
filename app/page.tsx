@@ -5,6 +5,9 @@ import { HeaderUser } from "./components/HeaderUser";
 import { requireUser, authEnabled } from "@/lib/auth";
 import { listMonthEmails } from "@/lib/data/emails";
 
+// Auth-gated and per-request DB reads: never statically prerender.
+export const dynamic = "force-dynamic";
+
 export default async function ThisMonthPage() {
   await requireUser();
   const emails = await listMonthEmails(seedMonth);
