@@ -1,9 +1,17 @@
-// Zod schemas for the structured copy Claude returns per email type (spec section 5).
-// The LLM produces JSON; we validate it here (retry once on failure), then a render
-// function in lib/email/render/*.ts turns the validated object into HTML.
-// The LLM never writes HTML.
+// Zod schemas for the structured copy Claude returns per email type (spec section 5,
+// refined to match the real reference-templates/). The LLM produces JSON; we validate
+// it here (retry once on failure), then a render function in lib/email/render/*.ts
+// turns the validated object into HTML. The LLM never writes HTML.
 
 import { z } from "zod";
+
+// Optional CTA override for the navy panel. Each type has a sensible default,
+// but the copy can supply its own so the CTA matches the email's voice.
+const cta = z.object({
+  eyebrow: z.string(),
+  headline: z.string(),
+  body: z.string(),
+});
 
 // Shared fields present on every email type.
 const baseCopy = z.object({
@@ -12,6 +20,7 @@ const baseCopy = z.object({
   eyebrow: z.string(),
   headline: z.string(),
   intro: z.string(),
+  cta: cta.optional(),
 });
 
 const stat = z.object({
@@ -19,7 +28,6 @@ const stat = z.object({
   label: z.string(),
 });
 
-// A "Dusty's take" block, reused by several types.
 const dustysTake = z.object({
   quote: z.string().optional(),
   paragraphs: z.array(z.string()).min(1),
@@ -27,8 +35,9 @@ const dustysTake = z.object({
 
 // -------- listing --------
 const listingItem = z.object({
-  eyebrow: z.string(),
+  eyebrow: z.string(), // "Just Listed • Eastwick" (single) or "Neighborhood • City ZIP" (multi)
   address: z.string(),
+  cityLine: z.string().optional(), // grey city/ZIP line, single-listing layout only
   price: z.string(),
   stats: z.array(stat).min(3).max(4),
   paragraphs: z.array(z.string()).min(1),
@@ -51,8 +60,17 @@ const marketStat = z.object({
   sublabel: z.string(),
 });
 
+const tierRow = z.object({
+  medianPrice: z.string(),
+  sqft: z.string(),
+  dom: z.string(),
+  newCount: z.string(),
+  absorbed: z.string(),
+});
+
 export const marketPulseCopySchema = baseCopy.extend({
   type: z.literal("marketPulse"),
+  periodLabel: z.string(), // "September 2026" (header, right side)
   openingNote: z.string(),
   stats: z.array(marketStat).length(3),
   whatsMoving: z.object({
@@ -60,14 +78,18 @@ export const marketPulseCopySchema = baseCopy.extend({
     paragraphs: z.array(z.string()).min(1),
   }),
   tierTable: z
-    .array(z.object({ tier: z.string(), value: z.string() }))
+    .object({
+      intro: z.string().optional(),
+      rows: z.array(tierRow).min(1),
+      footnote: z.string().optional(),
+    })
     .optional(),
   dustysTake,
   sourceNote: z.string(), // "Where these numbers come from" content
 });
 
 // -------- education --------
-// Either numbered sections (items) or argued sections (sections). At least one.
+// Numbered sections (items) or argued sections (sections). At least one.
 export const educationCopySchema = baseCopy
   .extend({
     type: z.literal("education"),
@@ -81,8 +103,8 @@ export const educationCopySchema = baseCopy
         }),
       )
       .optional(),
-    dustysTake,
-    sideNote: z.string().optional(),
+    dustysTake: dustysTake.optional(),
+    sideNote: z.object({ kicker: z.string(), body: z.string() }).optional(),
   })
   .refine((d) => (d.items?.length ?? 0) > 0 || (d.sections?.length ?? 0) > 0, {
     message: "education copy needs either items[] or sections[]",
@@ -95,9 +117,9 @@ export const holidayCopySchema = baseCopy.extend({
   list: z.object({
     kicker: z.string(),
     title: z.string(),
-    items: z.array(z.string()).min(1),
+    items: z.array(z.object({ title: z.string(), body: z.string() })).min(1),
   }),
-  closing: z.string(),
+  closing: z.array(z.string()).min(1),
   pullQuote: z.string(),
 });
 
@@ -109,6 +131,8 @@ export const emailCopySchema = z.discriminatedUnion("type", [
   holidayCopySchema,
 ]);
 
+export type Cta = z.infer<typeof cta>;
+export type ListingItem = z.infer<typeof listingItem>;
 export type ListingCopy = z.infer<typeof listingCopySchema>;
 export type MarketPulseCopy = z.infer<typeof marketPulseCopySchema>;
 export type EducationCopy = z.infer<typeof educationCopySchema>;

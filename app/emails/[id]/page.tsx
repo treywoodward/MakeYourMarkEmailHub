@@ -4,6 +4,8 @@ import { seedEmails } from "@/lib/seed";
 import { typeLabel } from "@/lib/labels";
 import { formatCardDate } from "@/lib/dates";
 import { StatusPill } from "@/app/components/StatusPill";
+import { EmailPreview } from "@/app/components/EmailPreview";
+import { tryRenderEmail } from "@/lib/email/render";
 
 // Next.js 16: params is async.
 export default async function EmailDetailPage({
@@ -13,8 +15,11 @@ export default async function EmailDetailPage({
   const email = seedEmails.find((e) => e.id === id);
   if (!email) notFound();
 
+  // Render a live preview when this email carries copy + photos.
+  const html = email.copy ? tryRenderEmail(email.copy, email.photos ?? []) : null;
+
   return (
-    <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col bg-panel">
+    <div className="mx-auto flex min-h-dvh max-w-[680px] flex-col bg-panel">
       {/* Top bar */}
       <header className="bg-navy px-5 py-3 text-white">
         <Link href="/" className="text-sm text-gold">
@@ -36,15 +41,18 @@ export default async function EmailDetailPage({
         <p className="mt-1 text-sm text-slate-600">{email.preview_text}</p>
       </div>
 
-      {/* Preview placeholder (the sandboxed iframe goes here once render
-          functions and reference templates are wired up). */}
+      {/* Live email preview (or a placeholder for types not yet wired up). */}
       <main className="flex-1 px-4 py-5">
-        <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-hairline bg-white text-center">
-          <p className="max-w-[240px] text-sm text-slate-500">
-            Live email preview appears here once the render functions and
-            reference templates are added.
-          </p>
-        </div>
+        {html ? (
+          <EmailPreview html={html} />
+        ) : (
+          <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-hairline bg-white text-center">
+            <p className="max-w-[260px] text-sm text-slate-500">
+              A live preview appears here once this email type has a render
+              function and real copy. So far the listing renderer is wired up.
+            </p>
+          </div>
+        )}
       </main>
 
       {/* Sticky approve / request-changes bar (screen 2). Disabled in the
