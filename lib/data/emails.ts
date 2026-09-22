@@ -39,23 +39,33 @@ export interface EmailDetail extends EmailListItem {
 
 export async function listMonthEmails(month: string): Promise<EmailListItem[]> {
   if (isDbConfigured && db) {
-    const rows = await db
-      .select()
-      .from(emails)
-      .where(eq(emails.month, month))
-      .orderBy(asc(emails.sendDate));
-    return rows.map((r) => ({
-      id: r.id,
-      month: r.month,
-      slot: r.slot,
-      type: r.type,
-      sendDate: r.sendDate ?? "",
-      status: r.status,
-      subject: r.subject ?? "",
-      previewText: r.previewText ?? "",
-    }));
+    try {
+      const rows = await db
+        .select()
+        .from(emails)
+        .where(eq(emails.month, month))
+        .orderBy(asc(emails.sendDate));
+      return rows.map((r) => ({
+        id: r.id,
+        month: r.month,
+        slot: r.slot,
+        type: r.type,
+        sendDate: r.sendDate ?? "",
+        status: r.status,
+        subject: r.subject ?? "",
+        previewText: r.previewText ?? "",
+      }));
+    } catch (err) {
+      // Never hard-crash the page on a DB hiccup; degrade to seed and log so
+      // the cause (usually a bad DATABASE_URL) is visible in the runtime logs.
+      console.error("[data] listMonthEmails DB query failed; using seed. Check DATABASE_URL.", err);
+    }
   }
 
+  return seedListItems(month);
+}
+
+function seedListItems(month: string): EmailListItem[] {
   return seedEmails
     .filter((e) => e.month === month)
     .map((e) => ({
@@ -73,44 +83,52 @@ export async function listMonthEmails(month: string): Promise<EmailListItem[]> {
 
 export async function getEmailDetail(id: string): Promise<EmailDetail | null> {
   if (isDbConfigured && db) {
-    const rows = await db.select().from(emails).where(eq(emails.id, id)).limit(1);
-    const r = rows[0];
-    if (!r) return null;
-    const commentRows = await db
-      .select({
-        id: comments.id,
-        body: comments.body,
-        createdAt: comments.createdAt,
-        authorName: profiles.name,
-        authorEmail: profiles.email,
-        authorRole: profiles.role,
-      })
-      .from(comments)
-      .leftJoin(profiles, eq(comments.authorId, profiles.id))
-      .where(eq(comments.emailId, id))
-      .orderBy(asc(comments.createdAt));
+    try {
+      const rows = await db.select().from(emails).where(eq(emails.id, id)).limit(1);
+      const r = rows[0];
+      if (!r) return seedDetail(id);
+      const commentRows = await db
+        .select({
+          id: comments.id,
+          body: comments.body,
+          createdAt: comments.createdAt,
+          authorName: profiles.name,
+          authorEmail: profiles.email,
+          authorRole: profiles.role,
+        })
+        .from(comments)
+        .leftJoin(profiles, eq(comments.authorId, profiles.id))
+        .where(eq(comments.emailId, id))
+        .orderBy(asc(comments.createdAt));
 
-    return {
-      id: r.id,
-      month: r.month,
-      slot: r.slot,
-      type: r.type,
-      sendDate: r.sendDate ?? "",
-      status: r.status,
-      subject: r.subject ?? "",
-      previewText: r.previewText ?? "",
-      copy: r.copy ?? null,
-      photos: r.photos ?? [],
-      comments: commentRows.map((c) => ({
-        id: c.id,
-        authorName: c.authorName ?? c.authorEmail ?? "Someone",
-        authorRole: c.authorRole ?? null,
-        body: c.body,
-        createdAt: c.createdAt.toISOString(),
-      })),
-    };
+      return {
+        id: r.id,
+        month: r.month,
+        slot: r.slot,
+        type: r.type,
+        sendDate: r.sendDate ?? "",
+        status: r.status,
+        subject: r.subject ?? "",
+        previewText: r.previewText ?? "",
+        copy: r.copy ?? null,
+        photos: r.photos ?? [],
+        comments: commentRows.map((c) => ({
+          id: c.id,
+          authorName: c.authorName ?? c.authorEmail ?? "Someone",
+          authorRole: c.authorRole ?? null,
+          body: c.body,
+          createdAt: c.createdAt.toISOString(),
+        })),
+      };
+    } catch (err) {
+      console.error("[data] getEmailDetail DB query failed; using seed. Check DATABASE_URL.", err);
+    }
   }
 
+  return seedDetail(id);
+}
+
+function seedDetail(id: string): EmailDetail | null {
   const e = seedEmails.find((s) => s.id === id);
   if (!e) return null;
   return {
