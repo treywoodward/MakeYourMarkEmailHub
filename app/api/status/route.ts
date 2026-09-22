@@ -13,5 +13,6 @@ export function GET() {
     push: Boolean(
       process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
     ),
+    ghl: Boolean(process.env.GHL_PRIVATE_TOKEN && process.env.GHL_LOCATION_ID),
   });
 }
