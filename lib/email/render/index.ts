@@ -3,6 +3,9 @@
 
 import type { EmailCopy } from "@/lib/email/schemas";
 import { renderListing } from "./listing";
+import { renderMarketPulse } from "./marketPulse";
+import { renderEducation } from "./education";
+import { renderHoliday } from "./holiday";
 
 export function renderEmail(
   copy: EmailCopy,
@@ -11,9 +14,16 @@ export function renderEmail(
   switch (copy.type) {
     case "listing":
       return renderListing(copy, photosByListing);
-    // marketPulse, education, and holiday renderers are added next.
-    default:
-      throw new Error(`Renderer for "${copy.type}" is not implemented yet.`);
+    case "marketPulse":
+      return renderMarketPulse(copy);
+    case "education":
+      return renderEducation(copy);
+    case "holiday":
+      return renderHoliday(copy);
+    default: {
+      const _exhaustive: never = copy;
+      throw new Error(`Unknown email type: ${JSON.stringify(_exhaustive)}`);
+    }
   }
 }
 
