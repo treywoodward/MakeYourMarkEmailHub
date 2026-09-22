@@ -2,6 +2,7 @@ import { seedMonth } from "@/lib/seed";
 import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
 import { HeaderUser } from "./components/HeaderUser";
+import { NotificationsToggle } from "./components/NotificationsToggle";
 import { requireUser, authEnabled } from "@/lib/auth";
 import { listMonthEmails } from "@/lib/data/emails";
 
@@ -47,8 +48,10 @@ export default async function ThisMonthPage() {
         </p>
       </div>
 
+      <NotificationsToggle />
+
       {/* List */}
-      <main className="space-y-3 px-4 pb-12">
+      <main className="space-y-3 px-4 pt-3 pb-12">
         {emails.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-hairline bg-surface px-6 py-14 text-center">
             <p className="font-serif text-lg text-navy">Nothing planned yet</p>

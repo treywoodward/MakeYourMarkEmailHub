@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Newsreader, Inter } from "next/font/google";
+import { ServiceWorkerRegister } from "./components/ServiceWorkerRegister";
 import "./globals.css";
 
 // Editorial serif for headlines and brand voice; clean sans for UI chrome.
@@ -20,10 +21,17 @@ export const metadata: Metadata = {
   description:
     "Plan, review, and ship the monthly email program for Dusty Joplin.",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "Dusty Email Hub",
+    statusBarStyle: "black-translucent",
+    title: "Email Hub",
   },
 };
 
@@ -39,7 +47,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${serif.variable} ${sans.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <ServiceWorkerRegister />
+        {children}
+      </body>
     </html>
   );
 }

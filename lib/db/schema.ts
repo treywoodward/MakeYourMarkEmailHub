@@ -194,7 +194,7 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   profileId: text("profile_id")
     .notNull()
     .references(() => profiles.id, { onDelete: "cascade" }),
-  endpoint: text("endpoint").notNull(),
-  keys: jsonb("keys").$type<Record<string, unknown>>().notNull(),
+  endpoint: text("endpoint").notNull().unique(),
+  keys: jsonb("keys").$type<{ p256dh: string; auth: string }>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
