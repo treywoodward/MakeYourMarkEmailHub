@@ -4,21 +4,9 @@ import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic, aiModel } from "./anthropic";
 import { buildSystemPrompt } from "./prompts";
+import { extractJson } from "./json";
 import { emailCopySchema, type EmailCopy } from "@/lib/email/schemas";
 import type { EmailType } from "@/lib/types";
-
-/** Pull a JSON object out of the model's text (tolerates stray prose or fences). */
-function extractJson(text: string): unknown {
-  let t = text.trim();
-  // Strip a leading ```json / ``` fence and trailing ```.
-  t = t.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
-  const start = t.indexOf("{");
-  const end = t.lastIndexOf("}");
-  if (start === -1 || end === -1 || end < start) {
-    throw new Error("No JSON object found in the model output.");
-  }
-  return JSON.parse(t.slice(start, end + 1));
-}
 
 function textOf(message: Anthropic.Message): string {
   return message.content

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { seedMonth } from "@/lib/seed";
 import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
@@ -46,6 +47,22 @@ export default async function ThisMonthPage() {
             </>
           )}
         </p>
+      </div>
+
+      {/* Quick nav */}
+      <div className="flex gap-2 px-5 pb-4">
+        <Link
+          href="/listings"
+          className="rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-sm font-medium text-ink-2 transition hover:border-navy/30 hover:text-ink"
+        >
+          Listings
+        </Link>
+        <Link
+          href="/submit"
+          className="rounded-full bg-navy px-3.5 py-1.5 text-sm font-medium text-white transition hover:bg-navy-700"
+        >
+          Submit a listing
+        </Link>
       </div>
 
       <NotificationsToggle />
