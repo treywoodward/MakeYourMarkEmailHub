@@ -32,24 +32,36 @@ export default async function EmailDetailPage({
   return (
     <div className="mx-auto flex min-h-dvh max-w-[680px] flex-col bg-panel">
       {/* Top bar */}
-      <header className="bg-navy px-5 py-3 text-white">
-        <Link href="/" className="text-sm text-gold">
-          ‹ This month
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-deep-navy px-5 py-3 backdrop-blur">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-white/70 transition hover:text-gold"
+        >
+          <span aria-hidden className="text-base leading-none">
+            ‹
+          </span>
+          This month
         </Link>
       </header>
 
       {/* Subject + preview text */}
-      <div className="border-b border-hairline bg-white px-5 py-4">
-        <div className="flex items-center justify-between gap-2">
-          <p className="font-serif text-[13px] italic text-gold">
-            {typeLabel[email.type]} · {formatCardDate(email.sendDate)}
+      <div className="border-b border-hairline bg-surface px-5 pt-5 pb-6">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[13px] text-ink-3">
+            <span className="font-serif italic text-gold-ink">
+              {typeLabel[email.type]}
+            </span>
+            <span className="mx-1.5 text-faint">·</span>
+            <span className="tnums">{formatCardDate(email.sendDate)}</span>
           </p>
           <StatusPill status={email.status} />
         </div>
-        <h1 className="mt-1 font-serif text-xl leading-snug text-navy">
+        <h1 className="mt-2 font-serif text-2xl leading-tight text-ink">
           {email.subject}
         </h1>
-        <p className="mt-1 text-sm text-slate-600">{email.previewText}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-ink-2">
+          {email.previewText}
+        </p>
       </div>
 
       <main className="flex-1">
@@ -69,10 +81,12 @@ export default async function EmailDetailPage({
           {html ? (
             <EmailPreview html={html} />
           ) : (
-            <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-hairline bg-white text-center">
-              <p className="max-w-[260px] text-sm text-slate-500">
-                A live preview appears here once this email has copy. Listing,
-                market pulse, education, and holiday types are all supported.
+            <div className="flex min-h-56 items-center justify-center rounded-2xl border border-dashed border-hairline bg-surface px-6 py-12 text-center">
+              <p className="max-w-[280px] text-sm leading-relaxed text-ink-2">
+                A live preview appears here once this email has copy.
+                {user.role === "admin"
+                  ? " Write a brief above and generate it."
+                  : " Trey is preparing it."}
               </p>
             </div>
           )}
@@ -87,7 +101,11 @@ export default async function EmailDetailPage({
       </main>
 
       {/* Sticky approve / request-changes bar */}
-      <ReviewBar emailId={email.id} status={email.status} dbEnabled={isDbConfigured} />
+      <ReviewBar
+        emailId={email.id}
+        status={email.status}
+        dbEnabled={isDbConfigured}
+      />
     </div>
   );
 }

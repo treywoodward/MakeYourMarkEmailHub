@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
-/* Brand tokens (see lib/brand.ts / CLAUDE.md). Tailwind v4 turns these into
-   utilities like bg-navy, text-gold, border-hairline, font-serif. */
+/* ---------------------------------------------------------------------------
+   Dusty Email Hub design tokens. Premium-editorial brand (navy + gold), with
+   navy-tinted neutrals (never flat gray) so every surface reads as one system.
+   Fonts are wired from next/font in layout.tsx via the --font-*-web variables.
+--------------------------------------------------------------------------- */
 @theme {
+  /* Brand */
   --color-navy: #2b2d6e;
+  --color-navy-700: #232456;
   --color-deep-navy: #1a1a2e;
-  --color-gold: #b58c4a;
-  --color-panel: #f7f7f9;
-  --color-hairline: #ececf1;
-  --color-faint: #dcdde9;
-  --color-ink: #1a1a2e;
+  --color-gold: #b58c4a; /* brand gold: accents, on-dark, large */
+  --color-gold-ink: #8a6a2c; /* accessible gold for small text on light (>=4.5:1) */
 
-  --font-serif: Georgia, "Times New Roman", serif;
-  --font-sans: Arial, Helvetica, sans-serif;
+  /* Surfaces */
+  --color-panel: #f5f5f8; /* app background */
+  --color-surface: #ffffff; /* cards */
+  --color-raise: #fbfbfd; /* subtly raised rows / insets */
+  --color-hairline: #e6e6ee; /* navy-tinted hairline */
+
+  /* Ink (navy-tinted neutral scale, replaces slate grays) */
+  --color-ink: #1c1d33; /* primary text */
+  --color-ink-2: #3f4060; /* secondary text */
+  --color-ink-3: #6b6c86; /* tertiary / metadata */
+  --color-faint: #c9cad6; /* oversized faint numerals, disabled */
+
+  /* Fonts (web faces from next/font, with brand-matching fallbacks) */
+  --font-serif: var(--font-serif-web), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-sans-web), Arial, Helvetica, sans-serif;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ---- base ---------------------------------------------------------------- */
 html {
   -webkit-text-size-adjust: 100%;
+  caret-color: var(--color-navy);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-faint) transparent;
 }
 
 body {
   background: var(--color-panel);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Themed browser surfaces: the parts we did not draw still carry the design. */
+::selection {
+  background: var(--color-gold);
+  color: var(--color-deep-navy);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-faint);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-3);
+  background-clip: padding-box;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Serif display: tighter tracking, balanced wraps, refined ligatures. */
+.font-serif {
+  letter-spacing: -0.015em;
+  font-feature-settings: "kern", "liga", "onum";
+}
+h1.font-serif,
+h2.font-serif,
+h3.font-serif {
+  text-wrap: balance;
+}
+
+/* Aligned numerals wherever figures should line up (dates, stats, metrics). */
+.tnums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* One authored entrance for lists, state-driven and gentle (Operate mode). */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
 }

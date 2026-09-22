@@ -4,6 +4,11 @@ import { useState, useTransition } from "react";
 import type { EmailStatus } from "@/lib/types";
 import { approveEmail, requestChanges } from "@/app/emails/[id]/actions";
 
+const primaryBtn =
+  "flex-1 rounded-xl bg-navy py-3 text-sm font-medium text-white transition hover:bg-navy-700 active:scale-[0.99] disabled:opacity-50 disabled:hover:bg-navy";
+const secondaryBtn =
+  "flex-1 rounded-xl border border-navy/25 py-3 text-sm font-medium text-navy transition hover:border-navy hover:bg-navy/[0.04] active:scale-[0.99] disabled:opacity-50";
+
 export function ReviewBar({
   emailId,
   status,
@@ -17,26 +22,30 @@ export function ReviewBar({
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
 
+  const bar =
+    "sticky bottom-0 border-t border-hairline bg-surface/95 px-4 py-3 backdrop-blur";
+
   if (!dbEnabled) {
     return (
-      <div className="sticky bottom-0 border-t border-hairline bg-white px-4 py-3">
-        <p className="text-center text-xs text-slate-500">
-          Connect Neon (set DATABASE_URL) to approve, request changes, and comment.
+      <div className={bar}>
+        <p className="text-center text-xs text-ink-3">
+          Connect Neon to approve, request changes, and comment.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="sticky bottom-0 border-t border-hairline bg-white px-4 py-3">
+    <div className={bar}>
       {noteOpen ? (
         <div>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
+            autoFocus
             placeholder="What should change?"
-            className="w-full rounded-lg border border-hairline p-2 text-sm focus:border-navy focus:outline-none"
+            className="w-full rounded-xl border border-hairline bg-raise p-3 text-sm text-ink placeholder:text-ink-3 focus:border-navy focus:bg-surface focus:outline-none"
           />
           <div className="mt-2 flex gap-2">
             <button
@@ -48,13 +57,13 @@ export function ReviewBar({
                   setNoteOpen(false);
                 })
               }
-              className="flex-1 rounded-lg bg-navy py-2.5 text-sm font-medium text-white disabled:opacity-50"
+              className={primaryBtn}
             >
-              Send request
+              {pending ? "Sending…" : "Send request"}
             </button>
             <button
               onClick={() => setNoteOpen(false)}
-              className="rounded-lg border border-hairline px-4 text-sm text-slate-600"
+              className="rounded-xl px-4 text-sm font-medium text-ink-3 transition hover:text-ink"
             >
               Cancel
             </button>
@@ -65,14 +74,14 @@ export function ReviewBar({
           <button
             disabled={pending || status === "approved"}
             onClick={() => startTransition(() => approveEmail(emailId))}
-            className="flex-1 rounded-lg bg-navy py-3 text-sm font-medium text-white disabled:opacity-50"
+            className={primaryBtn}
           >
             {status === "approved" ? "Approved" : "Approve"}
           </button>
           <button
             disabled={pending}
             onClick={() => setNoteOpen(true)}
-            className="flex-1 rounded-lg border border-navy py-3 text-sm font-medium text-navy disabled:opacity-50"
+            className={secondaryBtn}
           >
             Request changes
           </button>

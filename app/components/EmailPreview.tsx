@@ -25,21 +25,23 @@ export function EmailPreview({ html }: { html: string }) {
 
   return (
     <div>
-      {/* Width toggle */}
-      <div className="mb-3 flex justify-center gap-1">
-        {(["phone", "desktop"] as const).map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
-              view === v
-                ? "bg-navy text-white"
-                : "bg-white text-slate-500 border border-hairline"
-            }`}
-          >
-            {v}
-          </button>
-        ))}
+      {/* Width toggle — a segmented control */}
+      <div className="mb-3 flex justify-center">
+        <div className="inline-flex gap-1 rounded-full border border-hairline bg-raise p-1">
+          {(["phone", "desktop"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`rounded-full px-3.5 py-1 text-xs font-medium capitalize transition ${
+                view === v
+                  ? "bg-navy text-white shadow-sm"
+                  : "text-ink-3 hover:text-ink"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mx-auto" style={{ maxWidth }}>
@@ -51,7 +53,7 @@ export function EmailPreview({ html }: { html: string }) {
           onLoad={measure}
           sandbox="allow-same-origin"
           title="Email preview"
-          className="w-full rounded-lg border border-hairline bg-white"
+          className="w-full rounded-xl border border-hairline bg-white shadow-[0_1px_2px_rgba(28,29,51,0.04),0_18px_44px_-24px_rgba(28,29,51,0.4)]"
           style={{ height }}
         />
       </div>

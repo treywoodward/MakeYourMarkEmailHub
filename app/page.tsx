@@ -5,43 +5,60 @@ import { HeaderUser } from "./components/HeaderUser";
 import { requireUser, authEnabled } from "@/lib/auth";
 import { listMonthEmails } from "@/lib/data/emails";
 
-// Auth-gated and per-request DB reads: never statically prerender.
 export const dynamic = "force-dynamic";
 
 export default async function ThisMonthPage() {
   const user = await requireUser();
   const emails = await listMonthEmails(seedMonth);
+  const needsReview = emails.filter(
+    (e) => e.status === "in_review" || e.status === "changes_requested",
+  ).length;
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[480px] bg-panel">
+    <div className="mx-auto min-h-dvh max-w-[520px] bg-panel">
       {/* Top bar */}
-      <header className="flex items-start justify-between bg-navy px-5 pt-5 pb-4 text-white">
-        <div>
-          <p className="font-serif text-[11px] italic tracking-wide text-gold">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-deep-navy px-5 py-3.5 text-white/95 backdrop-blur">
+        <div className="leading-tight">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gold">
             Make Your Mark Legacy Team
           </p>
-          <h1 className="font-serif text-xl leading-tight">Dusty Email Hub</h1>
+          <p className="font-serif text-base tracking-tight">Email Hub</p>
         </div>
         {authEnabled && <HeaderUser name={user.name ?? "Signed in"} />}
       </header>
 
-      {/* Month heading */}
-      <div className="px-5 pt-6 pb-2">
-        <p className="font-serif text-sm italic text-gold">This month</p>
-        <div className="mt-0.5 h-px w-10 bg-gold" />
-        <h2 className="mt-2 font-serif text-2xl text-navy">
+      {/* Masthead */}
+      <div className="px-5 pt-8 pb-5">
+        <div className="h-px w-9 bg-gold" />
+        <h1 className="mt-3 font-serif text-4xl leading-none text-navy tnums">
           {formatMonthLabel(seedMonth)}
-        </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          {emails.length} emails planned
+        </h1>
+        <p className="mt-2.5 text-sm text-ink-2">
+          <span className="tnums font-medium text-ink">{emails.length}</span>{" "}
+          emails this month
+          {needsReview > 0 && (
+            <>
+              {" · "}
+              <span className="font-medium text-gold-ink">
+                {needsReview} need{needsReview === 1 ? "s" : ""} your review
+              </span>
+            </>
+          )}
         </p>
       </div>
 
-      {/* Cards */}
-      <main className="space-y-3 px-4 pt-2 pb-10">
-        {emails.map((email) => (
-          <EmailCard key={email.id} email={email} />
-        ))}
+      {/* List */}
+      <main className="space-y-3 px-4 pb-12">
+        {emails.length === 0 ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-hairline bg-surface px-6 py-14 text-center">
+            <p className="font-serif text-lg text-navy">Nothing planned yet</p>
+            <p className="mx-auto mt-1.5 max-w-[240px] text-sm text-ink-2">
+              The month&rsquo;s emails appear here as they are scheduled.
+            </p>
+          </div>
+        ) : (
+          emails.map((email) => <EmailCard key={email.id} email={email} />)
+        )}
       </main>
     </div>
   );

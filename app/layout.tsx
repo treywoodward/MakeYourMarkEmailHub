@@ -1,5 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import { Newsreader, Inter } from "next/font/google";
 import "./globals.css";
+
+// Editorial serif for headlines and brand voice; clean sans for UI chrome.
+const serif = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-serif-web",
+  display: "swap",
+});
+const sans = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans-web",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Dusty Email Hub",
@@ -16,12 +30,15 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2b2d6e",
+  themeColor: "#1a1a2e",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html
+      lang="en"
+      className={`${serif.variable} ${sans.variable} h-full antialiased`}
+    >
       <body className="min-h-full">{children}</body>
     </html>
   );

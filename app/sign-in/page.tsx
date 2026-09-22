@@ -7,38 +7,53 @@ export default function SignInPage() {
   const [error, formAction, pending] = useActionState(signIn, undefined);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-panel px-4">
-      <form
-        action={formAction}
-        className="w-full max-w-sm rounded-xl border border-hairline bg-white p-6 shadow-sm"
-      >
-        <p className="text-center font-serif text-[11px] italic tracking-wide text-gold">
-          Make Your Mark Legacy Team
-        </p>
-        <h1 className="mt-1 text-center font-serif text-2xl text-navy">Email Hub</h1>
-        <p className="mt-1 text-center text-sm text-slate-500">
-          Enter your password to continue.
-        </p>
+    <div className="grid min-h-dvh place-items-center bg-deep-navy px-5 py-10">
+      <div className="w-full max-w-sm">
+        {/* Brand lockup */}
+        <div className="text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
+            Make Your Mark Legacy Team
+          </p>
+          <h1 className="mt-2 font-serif text-4xl text-white">Email Hub</h1>
+          <div className="mx-auto mt-4 h-px w-9 bg-gold" />
+        </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          autoFocus
-          autoComplete="current-password"
-          className="mt-5 w-full rounded-lg border border-hairline px-3 py-2.5 text-sm focus:border-navy focus:outline-none"
-        />
-
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={pending}
-          className="mt-4 w-full rounded-lg bg-navy py-2.5 text-sm font-medium text-white disabled:opacity-50"
+        {/* Card */}
+        <form
+          action={formAction}
+          className="mt-8 rounded-2xl bg-surface p-6 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.6)]"
         >
-          {pending ? "Checking…" : "Continue"}
-        </button>
-      </form>
+          <label
+            htmlFor="password"
+            className="block text-xs font-semibold uppercase tracking-[0.1em] text-ink-3"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            autoFocus
+            autoComplete="current-password"
+            className="mt-2 w-full rounded-xl border border-hairline bg-raise px-3.5 py-3 text-sm text-ink placeholder:text-ink-3 focus:border-navy focus:bg-surface focus:outline-none"
+          />
+
+          {error && <p className="mt-2.5 text-sm text-amber-700">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="mt-4 w-full rounded-xl bg-navy py-3 text-sm font-semibold text-white transition hover:bg-navy-700 active:scale-[0.99] disabled:opacity-60"
+          >
+            {pending ? "Checking…" : "Continue"}
+          </button>
+        </form>
+
+        <p className="mt-5 text-center text-xs text-white/35">
+          A private tool for the Make Your Mark email program.
+        </p>
+      </div>
     </div>
   );
 }

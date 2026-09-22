@@ -18,6 +18,20 @@ export function formatCardDate(ymd: string): string {
   return `${WEEKDAYS[dt.getDay()]}, ${MONTHS[dt.getMonth()]} ${dt.getDate()}`;
 }
 
+/** A typographic date lockup: { weekday: "Sat", day: "05", month: "Sep" }. */
+export function cardDateParts(ymd: string): {
+  weekday: string;
+  day: string;
+  month: string;
+} {
+  const dt = parseLocal(ymd);
+  return {
+    weekday: WEEKDAYS[dt.getDay()],
+    day: String(dt.getDate()).padStart(2, "0"),
+    month: MONTHS[dt.getMonth()],
+  };
+}
+
 /** "September 2026" from a 'YYYY-MM' month key. */
 export function formatMonthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);

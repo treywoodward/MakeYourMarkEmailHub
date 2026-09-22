@@ -18,13 +18,16 @@ export function GeneratePanel({
   const [open, setOpen] = useState(!hasCopy);
 
   return (
-    <section className="mx-4 mb-4 rounded-xl border border-hairline bg-white p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-serif text-lg text-navy">Generate with Claude</h2>
+    <section className="mx-4 mb-4 overflow-hidden rounded-2xl border border-hairline bg-surface">
+      <div className="flex items-center justify-between px-4 py-3.5">
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+          <h2 className="font-serif text-lg text-ink">Generate with Claude</h2>
+        </div>
         {hasCopy && (
           <button
             onClick={() => setOpen((v) => !v)}
-            className="text-xs text-slate-500 underline"
+            className="text-xs font-medium text-ink-3 transition hover:text-ink"
           >
             {open ? "Hide" : "Regenerate"}
           </button>
@@ -32,26 +35,29 @@ export function GeneratePanel({
       </div>
 
       {!aiEnabled ? (
-        <p className="mt-2 text-sm text-slate-500">
-          Add an <code>ANTHROPIC_API_KEY</code> to enable generation.
+        <p className="border-t border-hairline px-4 py-3 text-sm text-ink-2">
+          Add an <code className="text-gold-ink">ANTHROPIC_API_KEY</code> to
+          enable generation.
         </p>
       ) : (
         open && (
-          <div className="mt-3">
-            <p className="mb-2 text-sm text-slate-600">
-              Describe the email. For a listing, include the address, price,
+          <div className="border-t border-hairline p-4">
+            <p className="mb-2.5 text-sm leading-relaxed text-ink-2">
+              Describe the email. For a listing, give the address, price,
               beds/baths/sqft, and what makes it special. For a market pulse,
-              include the numbers with their sources. For education, give the
-              topic and the points to make.
+              the numbers with their sources. For education, the topic and the
+              points to make.
             </p>
             <textarea
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
               rows={5}
               placeholder="Brief for Claude…"
-              className="w-full rounded-lg border border-hairline p-2 text-sm focus:border-navy focus:outline-none"
+              className="w-full rounded-xl border border-hairline bg-raise p-3 text-sm leading-relaxed text-ink placeholder:text-ink-3 focus:border-navy focus:bg-surface focus:outline-none"
             />
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="mt-2 text-sm text-amber-700">{error}</p>
+            )}
             <button
               disabled={pending || !brief.trim()}
               onClick={() =>
@@ -62,8 +68,11 @@ export function GeneratePanel({
                   else setOpen(false);
                 })
               }
-              className="mt-3 rounded-lg bg-gold px-4 py-2 text-sm font-medium text-deep-navy disabled:opacity-50"
+              className="mt-3 inline-flex items-center gap-2 rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-deep-navy transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50"
             >
+              {pending && (
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-deep-navy/30 border-t-deep-navy" />
+              )}
               {pending
                 ? "Writing the email…"
                 : hasCopy
