@@ -1,8 +1,11 @@
 import { seedEmails, seedMonth } from "@/lib/seed";
 import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
+import { HeaderUser } from "./components/HeaderUser";
+import { requireUser, authEnabled } from "@/lib/auth";
 
-export default function ThisMonthPage() {
+export default async function ThisMonthPage() {
+  await requireUser();
   const emails = [...seedEmails].sort((a, b) =>
     a.send_date.localeCompare(b.send_date),
   );
@@ -10,11 +13,14 @@ export default function ThisMonthPage() {
   return (
     <div className="mx-auto min-h-dvh max-w-[480px] bg-panel">
       {/* Top bar */}
-      <header className="bg-navy px-5 pt-5 pb-4 text-white">
-        <p className="font-serif text-[11px] italic tracking-wide text-gold">
-          Make Your Mark Legacy Team
-        </p>
-        <h1 className="font-serif text-xl leading-tight">Dusty Email Hub</h1>
+      <header className="flex items-start justify-between bg-navy px-5 pt-5 pb-4 text-white">
+        <div>
+          <p className="font-serif text-[11px] italic tracking-wide text-gold">
+            Make Your Mark Legacy Team
+          </p>
+          <h1 className="font-serif text-xl leading-tight">Dusty Email Hub</h1>
+        </div>
+        {authEnabled && <HeaderUser />}
       </header>
 
       {/* Month heading */}

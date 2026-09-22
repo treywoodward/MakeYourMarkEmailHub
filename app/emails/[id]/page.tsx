@@ -6,11 +6,13 @@ import { formatCardDate } from "@/lib/dates";
 import { StatusPill } from "@/app/components/StatusPill";
 import { EmailPreview } from "@/app/components/EmailPreview";
 import { tryRenderEmail } from "@/lib/email/render";
+import { requireUser } from "@/lib/auth";
 
 // Next.js 16: params is async.
 export default async function EmailDetailPage({
   params,
 }: PageProps<"/emails/[id]">) {
+  await requireUser();
   const { id } = await params;
   const email = seedEmails.find((e) => e.id === id);
   if (!email) notFound();

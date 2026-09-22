@@ -13,7 +13,9 @@ Full product spec: `docs/SPEC.md`. Read it before starting any feature.
 
 - Next.js (App Router) + TypeScript, deployed on Vercel
 - Tailwind for the dashboard UI (never inside email HTML)
-- Supabase: Postgres, auth (magic link), storage for uploads
+- Neon: free Postgres, accessed with Drizzle ORM (`lib/db`). `npm run db:push` applies the schema.
+- Clerk: free auth. Wired in `proxy.ts` + `lib/auth.ts`; gated on the publishable key, so the app runs openly until keys are set. Roles (admin/client) live in `profiles.role`, resolved in `lib/auth.ts` (admins via ADMIN_EMAILS).
+- File uploads (screenshots/PDFs) land on the GHL CDN; a temporary store (Vercel Blob or R2) is added when the ingestion pipeline is built.
 - Anthropic Claude API: copy generation and reading screenshots/PDFs
 - `sharp` for image processing
 - `web-push` + PWA manifest/service worker for push notifications
