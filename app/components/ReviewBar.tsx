@@ -13,17 +13,22 @@ export function ReviewBar({
   emailId,
   status,
   dbEnabled,
+  variant = "sticky",
 }: {
   emailId: string;
   status: EmailStatus;
   dbEnabled: boolean;
+  /** "sticky" = phone bottom bar; "inline" = a panel in the desktop rail. */
+  variant?: "sticky" | "inline";
 }) {
   const [pending, startTransition] = useTransition();
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
 
   const bar =
-    "sticky bottom-0 border-t border-hairline bg-surface/95 px-4 py-3 backdrop-blur";
+    variant === "inline"
+      ? "rounded-2xl border border-hairline bg-surface p-4"
+      : "sticky bottom-0 border-t border-hairline bg-surface/95 px-4 py-3 backdrop-blur";
 
   if (!dbEnabled) {
     return (

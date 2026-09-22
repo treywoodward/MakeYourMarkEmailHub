@@ -1,7 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { isBlobConfigured } from "@/lib/blob";
 import { isAiConfigured } from "@/lib/ai/anthropic";
-import { BackHeader } from "@/app/components/BackHeader";
+import { AppShell } from "@/app/components/AppShell";
 import { SubmitListingForm } from "./SubmitListingForm";
 
 export const dynamic = "force-dynamic";
@@ -9,21 +9,25 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export default async function SubmitPage() {
-  await requireUser();
+  const user = await requireUser();
   return (
-    <div className="mx-auto min-h-dvh max-w-[520px] bg-panel pb-12">
-      <BackHeader href="/listings" label="Listings" />
-      <div className="px-5 pt-8 pb-5">
+    <AppShell user={user} active="submit">
+      <div className="mx-auto max-w-2xl px-5 pb-16 pt-8 lg:px-10 lg:pt-12">
         <div className="h-px w-9 bg-gold" />
-        <h1 className="mt-3 font-serif text-3xl leading-tight text-navy">
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-navy lg:text-5xl">
           Submit a listing
         </h1>
-        <p className="mt-2 text-sm text-ink-2">
+        <p className="mt-3 max-w-prose text-sm text-ink-2">
           Add a flexmls screenshot and photos. Claude reads the details into a
           listing you can turn into an email.
         </p>
+        <div className="mt-6">
+          <SubmitListingForm
+            blobEnabled={isBlobConfigured}
+            aiEnabled={isAiConfigured}
+          />
+        </div>
       </div>
-      <SubmitListingForm blobEnabled={isBlobConfigured} aiEnabled={isAiConfigured} />
-    </div>
+    </AppShell>
   );
 }

@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { seedMonth } from "@/lib/seed";
 import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
-import { HeaderUser } from "./components/HeaderUser";
 import { NotificationsToggle } from "./components/NotificationsToggle";
-import { requireUser, authEnabled } from "@/lib/auth";
+import { AppShell } from "./components/AppShell";
+import { requireUser } from "@/lib/auth";
 import { listMonthEmails } from "@/lib/data/emails";
 
 export const dynamic = "force-dynamic";
@@ -17,69 +16,53 @@ export default async function ThisMonthPage() {
   ).length;
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[520px] bg-panel">
-      {/* Top bar */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-deep-navy px-5 py-3.5 text-white/95 backdrop-blur">
-        <div className="leading-tight">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gold">
-            Make Your Mark Legacy Team
-          </p>
-          <p className="font-serif text-base tracking-tight">Email Hub</p>
-        </div>
-        {authEnabled && <HeaderUser name={user.name ?? "Signed in"} />}
-      </header>
-
-      {/* Masthead */}
-      <div className="px-5 pt-8 pb-5">
-        <div className="h-px w-9 bg-gold" />
-        <h1 className="mt-3 font-serif text-4xl leading-none text-navy tnums">
-          {formatMonthLabel(seedMonth)}
-        </h1>
-        <p className="mt-2.5 text-sm text-ink-2">
-          <span className="tnums font-medium text-ink">{emails.length}</span>{" "}
-          emails this month
-          {needsReview > 0 && (
-            <>
-              {" · "}
-              <span className="font-medium text-gold-ink">
-                {needsReview} need{needsReview === 1 ? "s" : ""} your review
-              </span>
-            </>
-          )}
-        </p>
-      </div>
-
-      {/* Quick nav */}
-      <div className="flex gap-2 px-5 pb-4">
-        <Link
-          href="/listings"
-          className="rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-sm font-medium text-ink-2 transition hover:border-navy/30 hover:text-ink"
-        >
-          Listings
-        </Link>
-        <Link
-          href="/submit"
-          className="rounded-full bg-navy px-3.5 py-1.5 text-sm font-medium text-white transition hover:bg-navy-700"
-        >
-          Submit a listing
-        </Link>
-      </div>
-
-      <NotificationsToggle />
-
-      {/* List */}
-      <main className="space-y-3 px-4 pt-3 pb-12">
-        {emails.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-hairline bg-surface px-6 py-14 text-center">
-            <p className="font-serif text-lg text-navy">Nothing planned yet</p>
-            <p className="mx-auto mt-1.5 max-w-[240px] text-sm text-ink-2">
-              The month&rsquo;s emails appear here as they are scheduled.
+    <AppShell user={user} active="month">
+      <div className="mx-auto max-w-6xl px-5 pb-16 pt-8 lg:px-10 lg:pt-12">
+        {/* Masthead */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div className="h-px w-9 bg-gold" />
+            <h1 className="mt-3 font-serif text-4xl leading-none text-navy tnums lg:text-5xl">
+              {formatMonthLabel(seedMonth)}
+            </h1>
+            <p className="mt-3 text-sm text-ink-2">
+              <span className="tnums font-medium text-ink">{emails.length}</span>{" "}
+              emails this month
+              {needsReview > 0 && (
+                <>
+                  {" · "}
+                  <span className="font-medium text-gold-ink">
+                    {needsReview} need{needsReview === 1 ? "s" : ""} your review
+                  </span>
+                </>
+              )}
             </p>
           </div>
-        ) : (
-          emails.map((email) => <EmailCard key={email.id} email={email} />)
-        )}
-      </main>
-    </div>
+        </div>
+
+        {/* Mobile-only push prompt */}
+        <div className="mt-5 lg:hidden">
+          <NotificationsToggle />
+        </div>
+
+        {/* Emails */}
+        <div className="mt-7">
+          {emails.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-hairline bg-surface px-6 py-16 text-center">
+              <p className="font-serif text-lg text-navy">Nothing planned yet</p>
+              <p className="mx-auto mt-1.5 max-w-[240px] text-sm text-ink-2">
+                The month&rsquo;s emails appear here as they are scheduled.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {emails.map((email) => (
+                <EmailCard key={email.id} email={email} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </AppShell>
   );
 }

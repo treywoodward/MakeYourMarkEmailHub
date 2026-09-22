@@ -107,7 +107,7 @@ export function SubmitListingForm({
 
   if (!blobEnabled) {
     return (
-      <div className="mx-4 rounded-2xl border border-hairline bg-surface p-5 text-sm text-ink-2">
+      <div className="rounded-2xl border border-hairline bg-surface p-5 text-sm text-ink-2">
         Connect <span className="font-medium text-ink">Vercel Blob</span> to
         enable uploads (Vercel project → Storage → create a Blob store), then add
         its token as <code className="text-gold-ink">BLOB_READ_WRITE_TOKEN</code>.
@@ -118,7 +118,7 @@ export function SubmitListingForm({
   const busy = pending || uploading > 0 || screenshotBusy;
 
   return (
-    <div className="space-y-5 px-4">
+    <div className="space-y-5">
       {/* MLS */}
       <div>
         <label className="block text-xs font-semibold uppercase tracking-[0.1em] text-ink-3">
