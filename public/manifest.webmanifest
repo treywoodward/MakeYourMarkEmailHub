@@ -1,0 +1,10 @@
+{
+  "name": "Dusty Email Hub",
+  "short_name": "Email Hub",
+  "description": "Plan, review, and ship the monthly email program.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#2b2d6e",
+  "orientation": "portrait"
+}
