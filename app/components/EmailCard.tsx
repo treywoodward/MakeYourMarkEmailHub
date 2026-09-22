@@ -1,11 +1,11 @@
 import Link from "next/link";
-import type { SeedEmail } from "@/lib/seed";
+import type { EmailListItem } from "@/lib/data/emails";
 import { typeLabel } from "@/lib/labels";
 import { formatCardDate } from "@/lib/dates";
 import { StatusPill } from "./StatusPill";
 
-export function EmailCard({ email }: { email: SeedEmail }) {
-  const day = Number(email.send_date.split("-")[2]);
+export function EmailCard({ email }: { email: EmailListItem }) {
+  const day = Number(email.sendDate.split("-")[2]);
 
   return (
     <Link
@@ -29,7 +29,7 @@ export function EmailCard({ email }: { email: SeedEmail }) {
         {/* Content */}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-xs text-slate-500">{formatCardDate(email.send_date)}</p>
+            <p className="text-xs text-slate-500">{formatCardDate(email.sendDate)}</p>
             <StatusPill status={email.status} />
           </div>
           <p className="mt-1 font-serif text-[13px] italic text-gold">
@@ -39,7 +39,7 @@ export function EmailCard({ email }: { email: SeedEmail }) {
             {email.subject}
           </h3>
           <p className="mt-1 line-clamp-2 text-sm text-slate-600">
-            {email.preview_text}
+            {email.previewText}
           </p>
         </div>
       </div>

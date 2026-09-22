@@ -1,14 +1,13 @@
-import { seedEmails, seedMonth } from "@/lib/seed";
+import { seedMonth } from "@/lib/seed";
 import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
 import { HeaderUser } from "./components/HeaderUser";
 import { requireUser, authEnabled } from "@/lib/auth";
+import { listMonthEmails } from "@/lib/data/emails";
 
 export default async function ThisMonthPage() {
   await requireUser();
-  const emails = [...seedEmails].sort((a, b) =>
-    a.send_date.localeCompare(b.send_date),
-  );
+  const emails = await listMonthEmails(seedMonth);
 
   return (
     <div className="mx-auto min-h-dvh max-w-[480px] bg-panel">

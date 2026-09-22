@@ -119,6 +119,9 @@ export const emails = pgTable(
     subject: text("subject"),
     previewText: text("preview_text"),
     copy: jsonb("copy").$type<EmailCopy>(),
+    // Render input: photos[i] = ordered CDN URLs for listing i (hero first).
+    // The ingestion pipeline will later normalize these into listing_photos.
+    photos: jsonb("photos").$type<string[][]>(),
     html: text("html"),
     ghlTemplateId: text("ghl_template_id"),
     ghlCampaignId: text("ghl_campaign_id"),
