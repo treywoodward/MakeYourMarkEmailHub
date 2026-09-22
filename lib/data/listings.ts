@@ -125,39 +125,50 @@ export async function createListing(input: {
 
 export async function listListings(): Promise<ListingSummary[]> {
   if (!isDbConfigured || !db) return [];
-  const rows = await db.select().from(listings).orderBy(desc(listings.createdAt));
-  const heroes = await db
-    .select({
-      listingId: listingPhotos.listingId,
-      url: listingPhotos.sourceUrl,
-    })
-    .from(listingPhotos)
-    .where(eq(listingPhotos.isHero, true));
-  const heroByListing = new Map(heroes.map((h) => [h.listingId, h.url]));
-  return rows.map((r) => ({
-    id: r.id,
-    address: r.address,
-    city: r.city,
-    price: r.price,
-    state: r.state,
-    flags: r.flags,
-    createdAt: r.createdAt.toISOString(),
-    heroUrl: heroByListing.get(r.id) ?? null,
-  }));
+  try {
+    const rows = await db.select().from(listings).orderBy(desc(listings.createdAt));
+    const heroes = await db
+      .select({
+        listingId: listingPhotos.listingId,
+        url: listingPhotos.sourceUrl,
+      })
+      .from(listingPhotos)
+      .where(eq(listingPhotos.isHero, true));
+    const heroByListing = new Map(heroes.map((h) => [h.listingId, h.url]));
+    return rows.map((r) => ({
+      id: r.id,
+      address: r.address,
+      city: r.city,
+      price: r.price,
+      state: r.state,
+      flags: r.flags,
+      createdAt: r.createdAt.toISOString(),
+      heroUrl: heroByListing.get(r.id) ?? null,
+    }));
+  } catch (err) {
+    // Degrade to an empty list rather than 500 the page (e.g. the listings
+    // tables not yet pushed to this database). The cause is logged.
+    console.error(
+      "[data] listListings DB query failed; showing empty. Run `npm run db:push`?",
+      err,
+    );
+    return [];
+  }
 }
 
 export async function getListing(id: string): Promise<ListingDetail | null> {
   if (!isDbConfigured || !db) return null;
-  const rows = await db.select().from(listings).where(eq(listings.id, id)).limit(1);
-  const r = rows[0];
-  if (!r) return null;
-  const photos = await db
-    .select()
-    .from(listingPhotos)
-    .where(and(eq(listingPhotos.listingId, id)))
-    .orderBy(listingPhotos.sortOrder);
-  const flags = r.flags as Record<string, unknown>;
-  return {
+  try {
+    const rows = await db.select().from(listings).where(eq(listings.id, id)).limit(1);
+    const r = rows[0];
+    if (!r) return null;
+    const photos = await db
+      .select()
+      .from(listingPhotos)
+      .where(and(eq(listingPhotos.listingId, id)))
+      .orderBy(listingPhotos.sortOrder);
+    const flags = r.flags as Record<string, unknown>;
+    return {
     id: r.id,
     mlsNumber: r.mlsNumber,
     address: r.address,
@@ -178,6 +189,13 @@ export async function getListing(id: string): Promise<ListingDetail | null> {
       isHero: p.isHero,
       excludedReason: p.excludedReason,
     })),
-    screenshotUrl: (flags.screenshotUrl as string) ?? null,
-  };
+      screenshotUrl: (flags.screenshotUrl as string) ?? null,
+    };
+  } catch (err) {
+    console.error(
+      "[data] getListing DB query failed; showing not-found. Run `npm run db:push`?",
+      err,
+    );
+    return null;
+  }
 }

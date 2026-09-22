@@ -125,39 +125,6 @@ const marketPulseCopy: EmailCopy = {
   },
 };
 
-// --- Education: five seller mistakes (numbered) -----------------------------
-const educationCopy: EmailCopy = {
-  type: "education",
-  subject: "Five Mistakes That Can Hurt Your Home Sale in Lubbock",
-  previewText: "Most of the things that stall a sale are avoidable. Here are five.",
-  eyebrow: "The Seller Education Series",
-  headline: "Five Mistakes That Can Hurt\nYour Home Sale in Lubbock",
-  intro:
-    "Selling a home in Lubbock right now is very doable, but buyers have more options than they did a few years ago, and they notice everything. The good news is that most of the things that stall a sale are avoidable. Here are the five mistakes I see most often, and how to sidestep them.",
-  items: [
-    {
-      title: "Overpricing out of the gate",
-      body: "The first two weeks on the market are when your home gets the most attention. Price it above what comparable Lubbock homes are actually selling for, and buyers scroll right past. Homes that sit and then cut the price almost always net less than homes priced right from day one.",
-    },
-    {
-      title: "Ignoring curb appeal in West Texas conditions",
-      body: "Our sun and wind are hard on a house. A faded front door, dusty windows, or a lawn that has given up tells buyers the home has not been cared for, even if the inside is spotless. Fresh paint on the door, clean glass, and a watered, edged yard cost very little and change the entire first impression.",
-    },
-    {
-      title: "Skipping small repairs before listing",
-      body: "A dripping faucet, a cracked switch plate, a door that sticks. Individually they are nothing, but together they make buyers wonder what else was neglected, and it shows up in their offer. A weekend of small fixes protects thousands in negotiating room. Roof and foundation questions come up a lot here, so know where yours stand before the inspector does.",
-    },
-    {
-      title: "Settling for phone photos",
-      body: "Nearly every buyer starts their search online, and your photos are your first showing. Dark, crooked, or cluttered photos get skipped in seconds. Professional photography, taken when the light is right, consistently earns more showings, and more showings mean stronger offers.",
-    },
-    {
-      title: "Making showings hard to book",
-      body: "Buyers in Lubbock often tour homes on short notice, especially on weekends. Every declined or restricted showing is potentially a lost offer. Keep the home show ready, be flexible on timing, and let buyers walk through without you there so they can picture it as theirs.",
-    },
-  ],
-};
-
 // --- Holiday: Labor Day ----------------------------------------------------
 const holidayCopy: EmailCopy = {
   type: "holiday",
@@ -305,21 +272,10 @@ export const seedEmails: SeedEmail[] = [
     slot: "week3",
     type: "listing",
     send_date: "2026-09-21",
-    status: "changes_requested",
+    status: "sent",
     subject: "Just Listed in Eastwick at Kelsey Park",
     preview_text: "Like new and impeccably maintained, right on the park.",
     copy: listing3712Copy,
     photos: listing3712Photos,
-  },
-  {
-    id: "seed-week4-education",
-    month: "2026-09",
-    slot: "week4",
-    type: "education",
-    send_date: "2026-09-28",
-    status: "in_review",
-    subject: "Five Mistakes That Can Hurt Your Home Sale in Lubbock",
-    preview_text: "Most of the things that stall a sale are avoidable. Here are five.",
-    copy: educationCopy,
   },
 ];
