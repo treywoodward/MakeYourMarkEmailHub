@@ -13,5 +13,9 @@ export function GET() {
     push: Boolean(
       process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
     ),
+    // Diagnostic: names only (never values) of blob/vapid-related env vars, so
+    // a mismatched variable name is visible.
+    blobVars: Object.keys(process.env).filter((k) => /blob/i.test(k)),
+    vapidVars: Object.keys(process.env).filter((k) => /vapid/i.test(k)),
   });
 }
