@@ -3,14 +3,17 @@ import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
 import { NotificationsToggle } from "./components/NotificationsToggle";
 import { AppShell } from "./components/AppShell";
+import { DraftsPanel } from "./components/DraftsPanel";
 import { requireUser } from "@/lib/auth";
 import { listMonthEmails } from "@/lib/data/emails";
+import { listDrafts } from "@/lib/ghl";
 
 export const dynamic = "force-dynamic";
 
 export default async function ThisMonthPage() {
   const user = await requireUser();
   const emails = await listMonthEmails(seedMonth);
+  const drafts = user.role === "admin" ? await listDrafts() : [];
   const needsReview = emails.filter(
     (e) => e.status === "in_review" || e.status === "changes_requested",
   ).length;
@@ -62,6 +65,8 @@ export default async function ThisMonthPage() {
             </div>
           )}
         </div>
+
+        {user.role === "admin" && <DraftsPanel drafts={drafts} />}
       </div>
     </AppShell>
   );

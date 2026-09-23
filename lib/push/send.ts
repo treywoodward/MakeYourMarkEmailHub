@@ -25,22 +25,32 @@ export interface PushPayload {
   url?: string;
 }
 
-/** Notify everyone except the actor (the other party on a review action). */
-export async function notifyOthers(actorProfileId: string, payload: PushPayload) {
-  if (!isPushConfigured) return;
+/**
+ * Notify everyone except the actor (the other party on a review action).
+ * Returns how many live subscriptions were delivered to, so callers can tell
+ * the user whether the other party actually has notifications enabled.
+ */
+export async function notifyOthers(
+  actorProfileId: string,
+  payload: PushPayload,
+): Promise<number> {
+  if (!isPushConfigured) return 0;
   configure();
   const subs = await subscriptionsExcept(actorProfileId);
-  await Promise.all(
+  const results = await Promise.all(
     subs.map(async (s) => {
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: s.keys },
           JSON.stringify(payload),
         );
+        return true;
       } catch (err) {
         const code = (err as { statusCode?: number })?.statusCode;
         if (code === 404 || code === 410) await removeSubscription(s.endpoint);
+        return false;
       }
     }),
   );
+  return results.filter(Boolean).length;
 }

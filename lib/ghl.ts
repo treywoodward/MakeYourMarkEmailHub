@@ -44,6 +44,7 @@ interface ScheduleRow {
   dateScheduled?: number;
   dateAdded?: number;
   createdAt?: string;
+  updatedAt?: string;
   // The non-tracking copy renders the email without firing open/click pixels,
   // so previewing a campaign here never pollutes Dusty's real stats.
   nonTrackingDownloadUrl?: string;
@@ -72,11 +73,8 @@ function normalize(row: ScheduleRow): Campaign {
   };
 }
 
-/**
- * List Dusty's email campaigns, most recently sent first. Returns [] when GHL
- * is not configured or the call fails, so the page never hard-errors.
- */
-export async function listCampaigns(): Promise<Campaign[]> {
+/** Fetch the raw schedule rows (sent + drafts) once, cached briefly. */
+async function fetchSchedules(): Promise<ScheduleRow[]> {
   if (!isGhlConfigured) return [];
   try {
     const url = `${BASE}/emails/schedule?locationId=${locationId}&limit=100`;
@@ -86,20 +84,57 @@ export async function listCampaigns(): Promise<Campaign[]> {
         Version: API_VERSION,
         Accept: "application/json",
       },
-      // Politeness: cache the campaign list briefly rather than hitting GHL on
-      // every render. Metrics do not need to be second-fresh.
+      // Politeness: cache the list briefly rather than hitting GHL every render.
       next: { revalidate: 300 },
     });
     if (!res.ok) return [];
     const data = (await res.json()) as { schedules?: ScheduleRow[] };
-    const rows = data.schedules ?? [];
-    return rows
-      .map(normalize)
-      .filter((c) => c.id && c.status !== "draft")
-      .sort((a, b) => (b.sentAt ?? 0) - (a.sentAt ?? 0));
+    return data.schedules ?? [];
   } catch {
     return [];
   }
+}
+
+/**
+ * List Dusty's SENT email campaigns, most recently sent first. Returns [] when
+ * GHL is not configured or the call fails, so the page never hard-errors.
+ */
+export async function listCampaigns(): Promise<Campaign[]> {
+  const rows = await fetchSchedules();
+  return rows
+    .map(normalize)
+    .filter((c) => c.id && c.status !== "draft")
+    .sort((a, b) => (b.sentAt ?? 0) - (a.sentAt ?? 0));
+}
+
+/** An unsent draft email in GoHighLevel. */
+export interface Draft {
+  id: string;
+  name: string;
+  htmlUrl: string | null;
+  updatedAt: number | null;
+}
+
+/** List GHL drafts (unsent), most recently edited first. */
+export async function listDrafts(): Promise<Draft[]> {
+  const rows = await fetchSchedules();
+  return rows
+    .filter((r) => (r.status ?? "") === "draft" && (r.id ?? r._id))
+    .map((r) => ({
+      id: r.id ?? r._id ?? "",
+      name: r.name ?? "Untitled draft",
+      // Drafts carry only downloadUrl (no non-tracking copy); it is unsent, so
+      // no tracking pixels fire regardless.
+      htmlUrl: r.downloadUrl ?? r.nonTrackingDownloadUrl ?? null,
+      updatedAt: r.updatedAt ? Date.parse(r.updatedAt) : null,
+    }))
+    .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+}
+
+/** One draft by id. */
+export async function getDraft(id: string): Promise<Draft | null> {
+  const all = await listDrafts();
+  return all.find((d) => d.id === id) ?? null;
 }
 
 /** One campaign by id (there is no per-campaign GET, so read from the list). */
