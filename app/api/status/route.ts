@@ -14,9 +14,5 @@ export function GET() {
       process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
     ),
     ghl: Boolean(process.env.GHL_PRIVATE_TOKEN && process.env.GHL_LOCATION_ID),
-    // Temporary: confirm prod points at the populated Neon branch. The endpoint
-    // id is not a credential; remove this once the DATABASE_URL is verified.
-    dbEndpoint:
-      process.env.DATABASE_URL?.match(/@(ep-[^.]+)/)?.[1] ?? null,
   });
 }
