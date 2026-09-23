@@ -22,7 +22,7 @@ export function GeneratePanel({
       <div className="flex items-center justify-between px-4 py-3.5">
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-          <h2 className="font-serif text-lg text-ink">Generate with Claude</h2>
+          <h2 className="font-serif text-lg text-ink">Generate email</h2>
         </div>
         {hasCopy && (
           <button
@@ -52,7 +52,7 @@ export function GeneratePanel({
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
               rows={5}
-              placeholder="Brief for Claude…"
+              placeholder="Brief for this email…"
               className="w-full rounded-xl border border-hairline bg-raise p-3 text-sm leading-relaxed text-ink placeholder:text-ink-3 focus:border-navy focus:bg-surface focus:outline-none"
             />
             {error && (

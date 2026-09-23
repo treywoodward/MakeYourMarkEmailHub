@@ -139,8 +139,8 @@ export function SubmitListingForm({
         </label>
         <p className="mt-1 mb-2 text-sm text-ink-2">
           {aiEnabled
-            ? "Claude reads the address, price, stats, and description from it."
-            : "Add ANTHROPIC_API_KEY to have Claude read this automatically."}
+            ? "The address, price, stats, and description are read from it automatically."
+            : "Add ANTHROPIC_API_KEY to read the screenshot automatically."}
         </p>
         {screenshot ? (
           <div className="relative overflow-hidden rounded-2xl border border-hairline">

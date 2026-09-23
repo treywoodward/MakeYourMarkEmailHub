@@ -11,6 +11,7 @@ import { AppShell } from "@/app/components/AppShell";
 import { tryRenderEmail } from "@/lib/email/render";
 import { requireUser } from "@/lib/auth";
 import { getEmailDetail } from "@/lib/data/emails";
+import { ghlHtmlForEmail } from "@/lib/ghl";
 import { isDbConfigured } from "@/lib/db";
 import { isAiConfigured } from "@/lib/ai/anthropic";
 
@@ -28,7 +29,11 @@ export default async function EmailDetailPage({
   const email = await getEmailDetail(id);
   if (!email) notFound();
 
-  const html = email.copy ? tryRenderEmail(email.copy, email.photos) : null;
+  // For a sent email that maps to a real GHL campaign, show the exact HTML that
+  // went out. Otherwise render our copy. Fall back to copy if GHL is unreachable.
+  const ghlHtml = await ghlHtmlForEmail(email.month, email.slot);
+  const html =
+    ghlHtml ?? (email.copy ? tryRenderEmail(email.copy, email.photos) : null);
 
   const preview = html ? (
     <EmailPreview html={html} />

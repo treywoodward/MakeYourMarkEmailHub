@@ -33,8 +33,8 @@ export default async function ListingsPage() {
             <div className="rounded-2xl border border-dashed border-hairline bg-surface px-6 py-16 text-center">
               <p className="font-serif text-lg text-navy">No listings yet</p>
               <p className="mx-auto mt-1.5 max-w-[280px] text-sm text-ink-2">
-                Submit one with a flexmls screenshot and photos, and Claude reads
-                the details.
+                Submit one with a flexmls screenshot and photos, and the details
+                are read for you.
               </p>
               <Link
                 href="/submit"

@@ -18,7 +18,7 @@ export default async function SubmitPage() {
           Submit a listing
         </h1>
         <p className="mt-3 max-w-prose text-sm text-ink-2">
-          Add a flexmls screenshot and photos. Claude reads the details into a
+          Add a flexmls screenshot and photos. The details are read into a
           listing you can turn into an email.
         </p>
         <div className="mt-6">

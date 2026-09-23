@@ -167,68 +167,6 @@ const holidayCopy: EmailCopy = {
     "And if your day off gets hijacked by a conversation about buying or selling a house, that is what I am here for. Text me Tuesday.",
 };
 
-// --- Dual listing: 3712 141st + 5706 Grinnell duplex -----------------------
-const dualListingCopy: EmailCopy = {
-  type: "listing",
-  subject: "Two New Listings in Lubbock",
-  previewText: "A family home on the park and a duplex already earning rent.",
-  eyebrow: "New This Week",
-  headline: "Two New Listings,\nTwo Different Buyers",
-  intro:
-    "Two properties hit the market this week and they are aimed at completely different people. The first is a move-in ready family home in south Lubbock that backs right up to a park. The second is a northwest Lubbock duplex that is already generating rent. If either one is your kind of deal, let me know.",
-  listings: [
-    {
-      eyebrow: "Eastwick at Kelsey Park  •  Lubbock, TX 79423",
-      address: "3712 141st Street",
-      price: "$550,000",
-      stats: [
-        { value: "4", label: "Beds" },
-        { value: "3", label: "Baths" },
-        { value: "2,705", label: "Sq Ft" },
-      ],
-      paragraphs: [
-        "Like new and impeccably maintained, this four bedroom, three bath home brings together style, function and location. The floor plan is filled with natural light and includes a versatile flex space that works well as a home office or a playroom. Outside, beat-the-heat shades keep the covered patio comfortable through a West Texas afternoon. Exceptionally clean and move-in ready.",
-      ],
-      callout:
-        "Kelsey Park is right through your back gate. Not down the street, not a drive away. Through the gate.",
-      mlsLine: "MLS #202611456  •  Active",
-    },
-    {
-      eyebrow: "Duplex  •  Northwest Lubbock, TX 79416",
-      address: "5706 Grinnell Street",
-      price: "$250,000",
-      stats: [
-        { value: "4", label: "Beds" },
-        { value: "4", label: "Baths" },
-        { value: "4", label: "Garage" },
-        { value: "2,378", label: "Sq Ft" },
-      ],
-      paragraphs: [
-        "A well maintained duplex on a quiet cul-de-sac in northwest Lubbock, built in 2005 and set up for either an investor or an owner-occupant. Side A is vacant and ready to show. Side B is occupied by a long term tenant paying $1,200 a month. Both sides have spacious backyards with patios and automatic sprinklers, and appliances convey with the property.",
-        "It was also built with sound in mind, with blown-in cellulose insulation in the exterior walls and in the center dividing wall, so the two units stay genuinely private from one another. Recent work includes HVAC systems replaced in 2022, a new cedar picket fence in 2023, and a roof replaced in 2019.",
-      ],
-      callout:
-        "Live on one side and let the other side help cover your note. Or hold both and add a solid rental to the portfolio.",
-      mlsLine: "MLS #202611777  •  New Listing",
-    },
-  ],
-};
-
-const dualListingPhotos: string[][] = [
-  listing3712Photos[0],
-  [
-    `${CDN}6a8c707dbbd5ecc97fa13db7.jpg`, // hero
-    `${CDN}6a8c707cad59e6cfed500674.jpg`,
-    `${CDN}6a8c707c67ecc8731d7c8636.jpg`,
-    `${CDN}6a8c707ccdd4b797a3599612.jpg`,
-    `${CDN}6a8c707c4ee4e7911d82a4ea.jpg`,
-    `${CDN}6a8c707dad59e6cfed5006c7.jpg`,
-    `${CDN}6a8c707c4ee4e7911d82a4e5.jpg`,
-    `${CDN}6a8c707c45707028769b184b.jpg`,
-    `${CDN}6a8c707d67f8d8c86b983170.jpg`,
-  ],
-];
-
 export const seedMonth = "2026-09";
 
 export const seedEmails: SeedEmail[] = [
@@ -237,32 +175,20 @@ export const seedEmails: SeedEmail[] = [
     month: "2026-09",
     slot: "holiday",
     type: "holiday",
-    send_date: "2026-09-05",
-    status: "sent",
-    subject: "Happy Labor Day from the Make Your Mark Legacy Team",
-    preview_text: "However you read a holiday named after work, I hope you get the day.",
-    copy: holidayCopy,
-  },
-  {
-    id: "seed-week1-listing",
-    month: "2026-09",
-    slot: "week1",
-    type: "listing",
     send_date: "2026-09-07",
     status: "sent",
-    subject: "Two New Listings in Lubbock",
-    preview_text: "A family home on the park and a duplex already earning rent.",
-    copy: dualListingCopy,
-    photos: dualListingPhotos,
+    subject: "Happy Labor Day from Make Your Mark!",
+    preview_text: "However you read a holiday named after work, I hope you get the day.",
+    copy: holidayCopy,
   },
   {
     id: "seed-week2-marketpulse",
     month: "2026-09",
     slot: "week2",
     type: "marketPulse",
-    send_date: "2026-09-14",
+    send_date: "2026-09-17",
     status: "sent",
-    subject: "The Lubbock Market Pulse | September 2026",
+    subject: "Market Pulse | September 2026 | Make Your Mark Legacy Team",
     preview_text: "Our market cooled. Here is what the live numbers actually show.",
     copy: marketPulseCopy,
   },
@@ -273,8 +199,8 @@ export const seedEmails: SeedEmail[] = [
     type: "listing",
     send_date: "2026-09-21",
     status: "sent",
-    subject: "Just Listed in Eastwick at Kelsey Park",
-    preview_text: "Like new and impeccably maintained, right on the park.",
+    subject: "Plenty of Listings to Choose From | Make Your Mark Legacy Team",
+    preview_text: "Four homes from $225K to $750K, priced across the market.",
     copy: listing3712Copy,
     photos: listing3712Photos,
   },

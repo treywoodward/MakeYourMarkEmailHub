@@ -109,6 +109,32 @@ export async function getCampaign(id: string): Promise<Campaign | null> {
 }
 
 /**
+ * Which real GHL campaign a planned email corresponds to, keyed by
+ * `${month}:${slot}`. For a sent email that has a match here, the detail view
+ * renders the exact HTML that went out through GHL instead of our re-render, so
+ * the preview matches what recipients actually got. Unmapped (future / draft)
+ * emails fall back to the code-rendered copy.
+ */
+export const GHL_CAMPAIGN_BY_KEY: Record<string, string> = {
+  "2026-09:holiday": "6a9da30c6316ab71ecffece3", // Labor Day, sent 9/7
+  "2026-09:week2": "6aa41b637919774ef2faf6ae", // Market Pulse, sent 9/17
+  "2026-09:week3": "6ab1398e173deedb778b780e", // 4 Listings, sent 9/21
+};
+
+/** The exact sent HTML for a planned email, or null if it has no GHL match. */
+export async function ghlHtmlForEmail(
+  month: string,
+  slot: string,
+): Promise<string | null> {
+  if (!isGhlConfigured) return null;
+  const id = GHL_CAMPAIGN_BY_KEY[`${month}:${slot}`];
+  if (!id) return null;
+  const campaign = await getCampaign(id);
+  if (!campaign?.htmlUrl) return null;
+  return getCampaignHtml(campaign.htmlUrl);
+}
+
+/**
  * Fetch the exact HTML a campaign sent, following the hosted redirect. Returns
  * null on any failure so the detail page can fall back gracefully.
  */
