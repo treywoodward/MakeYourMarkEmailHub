@@ -39,3 +39,12 @@ export async function subscriptionsExcept(profileId: string) {
     .from(pushSubscriptions)
     .where(ne(pushSubscriptions.profileId, profileId));
 }
+
+/** Every subscription that belongs to this profile (this person's devices). */
+export async function subscriptionsFor(profileId: string) {
+  if (!isDbConfigured || !db) return [];
+  return db
+    .select()
+    .from(pushSubscriptions)
+    .where(eq(pushSubscriptions.profileId, profileId));
+}

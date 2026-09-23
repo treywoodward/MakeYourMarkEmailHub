@@ -4,6 +4,7 @@ import { EmailCard } from "./components/EmailCard";
 import { NotificationsToggle } from "./components/NotificationsToggle";
 import { AppShell } from "./components/AppShell";
 import { DraftsPanel } from "./components/DraftsPanel";
+import { TestNotificationButton } from "./components/TestNotificationButton";
 import { requireUser } from "@/lib/auth";
 import { listMonthEmails } from "@/lib/data/emails";
 import { listDrafts } from "@/lib/ghl";
@@ -46,6 +47,10 @@ export default async function ThisMonthPage() {
         {/* Mobile-only push prompt */}
         <div className="mt-5 lg:hidden">
           <NotificationsToggle />
+        </div>
+
+        <div className="mt-5">
+          <TestNotificationButton />
         </div>
 
         {/* Emails */}
