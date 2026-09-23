@@ -115,9 +115,13 @@ export interface Draft {
   updatedAt: number | null;
 }
 
-/** List GHL drafts (unsent), most recently edited first. */
+/**
+ * List GHL drafts (unsent), most recently edited first. Drafts not touched in
+ * the last 30 days are hidden so old test drafts do not clutter the dashboard.
+ */
 export async function listDrafts(): Promise<Draft[]> {
   const rows = await fetchSchedules();
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
   return rows
     .filter((r) => (r.status ?? "") === "draft" && (r.id ?? r._id))
     .map((r) => ({
@@ -128,6 +132,7 @@ export async function listDrafts(): Promise<Draft[]> {
       htmlUrl: r.downloadUrl ?? r.nonTrackingDownloadUrl ?? null,
       updatedAt: r.updatedAt ? Date.parse(r.updatedAt) : null,
     }))
+    .filter((d) => d.updatedAt != null && d.updatedAt >= cutoff)
     .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
 }
 
