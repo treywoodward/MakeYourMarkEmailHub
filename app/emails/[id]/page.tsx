@@ -7,6 +7,8 @@ import { EmailPreview } from "@/app/components/EmailPreview";
 import { CommentThread } from "@/app/components/CommentThread";
 import { ReviewBar } from "@/app/components/ReviewBar";
 import { GeneratePanel } from "@/app/components/GeneratePanel";
+import { SendInGhlPanel } from "@/app/components/SendInGhlPanel";
+import { ScheduleBanner } from "@/app/components/ScheduleBanner";
 import { AppShell } from "@/app/components/AppShell";
 import { tryRenderEmail } from "@/lib/email/render";
 import { requireUser } from "@/lib/auth";
@@ -81,11 +83,24 @@ export default async function EmailDetailPage({
           </p>
         </div>
 
+        {/* Client: scheduled banner with the send date + reschedule option. */}
+        {user.role === "client" &&
+          email.status === "approved" &&
+          email.sendDate && (
+            <div className="mt-6">
+              <ScheduleBanner emailId={email.id} sendDate={email.sendDate} />
+            </div>
+          )}
+
         {/* Two columns on desktop: preview + action rail. */}
         <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
           <div className="min-w-0">{preview}</div>
 
           <aside className="mt-6 space-y-5 lg:mt-0 lg:sticky lg:top-8 lg:self-start">
+            {user.role === "admin" && email.status === "approved" && html && (
+              <SendInGhlPanel html={html} sendDate={email.sendDate || null} />
+            )}
+
             {user.role === "admin" && (
               <GeneratePanel
                 emailId={email.id}

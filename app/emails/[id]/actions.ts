@@ -10,7 +10,8 @@ import {
 } from "@/lib/data/emails";
 import { generateEmailCopy } from "@/lib/ai/generate";
 import { tryRenderEmail } from "@/lib/email/render";
-import { notifyOthers } from "@/lib/push/send";
+import { notifyOthers, notifyProfile } from "@/lib/push/send";
+import { formatCardDate } from "@/lib/dates";
 
 async function emailSubject(emailId: string): Promise<string> {
   const e = await getEmailDetail(emailId);
@@ -19,16 +20,60 @@ async function emailSubject(emailId: string): Promise<string> {
 
 // Both roles (Trey and Dusty) may approve, request changes, and comment.
 
-export async function approveEmail(emailId: string) {
+export async function approveEmail(
+  emailId: string,
+): Promise<{ sendDate: string | null }> {
   const user = await requireUser();
+  const email = await getEmailDetail(emailId);
   await setEmailStatus(emailId, "approved");
   revalidatePath(`/emails/${emailId}`);
   revalidatePath("/");
-  await notifyOthers(user.id, {
-    title: "Approved",
-    body: `${user.name} approved "${await emailSubject(emailId)}"`,
+
+  const subject = email?.subject || "an email";
+  if (user.role === "admin") {
+    // Tell Dusty it is set, with the date and the option to ask for another.
+    const when = email?.sendDate ? formatCardDate(email.sendDate) : null;
+    await notifyProfile("client", {
+      title: "Your email is scheduled",
+      body: when
+        ? `"${subject}" is set to go out ${when}. Tap to review or request a different date.`
+        : `"${subject}" is approved.`,
+      url: `/emails/${emailId}`,
+    });
+  } else {
+    await notifyOthers(user.id, {
+      title: "Approved",
+      body: `${user.name} approved "${subject}"`,
+      url: `/emails/${emailId}`,
+    });
+  }
+  return { sendDate: email?.sendDate ?? null };
+}
+
+/** Client asks to move the send date. Records it and pings the admin. */
+export async function requestSendDate(
+  emailId: string,
+  isoDate: string,
+  note: string,
+): Promise<{ ok?: true; error?: string }> {
+  const user = await requireUser();
+  if (!isoDate) return { error: "Pick a date." };
+  const pretty = formatCardDate(isoDate);
+  const trimmed = note.trim();
+  await addComment(
+    emailId,
+    user,
+    `Requested a different send date: ${pretty}.${trimmed ? " " + trimmed : ""}`,
+  );
+  await setEmailStatus(emailId, "changes_requested");
+  revalidatePath(`/emails/${emailId}`);
+  revalidatePath("/");
+  await notifyProfile("admin", {
+    title: "Date change requested",
+    body: `${user.name} asked to move "${await emailSubject(emailId)}" to ${pretty}.`,
     url: `/emails/${emailId}`,
   });
+  return { ok: true };
 }
 
 export async function requestChanges(emailId: string, note: string) {

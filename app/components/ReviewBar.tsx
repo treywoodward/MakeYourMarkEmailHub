@@ -3,6 +3,16 @@
 import { useState, useTransition } from "react";
 import type { EmailStatus } from "@/lib/types";
 import { approveEmail, requestChanges } from "@/app/emails/[id]/actions";
+import { toast } from "@/lib/toast";
+
+function prettyDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 const primaryBtn =
   "flex-1 rounded-xl bg-navy py-3 text-sm font-medium text-white transition hover:bg-navy-700 active:scale-[0.99] disabled:opacity-50 disabled:hover:bg-navy";
@@ -78,7 +88,17 @@ export function ReviewBar({
         <div className="flex gap-3">
           <button
             disabled={pending || status === "approved"}
-            onClick={() => startTransition(() => approveEmail(emailId))}
+            onClick={() =>
+              startTransition(async () => {
+                const res = await approveEmail(emailId);
+                toast(
+                  res?.sendDate
+                    ? `Approved. Copy the HTML into GHL and schedule for ${prettyDate(res.sendDate)}. Dusty was notified.`
+                    : "Approved. Dusty was notified.",
+                  "success",
+                );
+              })
+            }
             className={primaryBtn}
           >
             {status === "approved" ? "Approved" : "Approve"}

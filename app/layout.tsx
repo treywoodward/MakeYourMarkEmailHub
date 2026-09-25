@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Newsreader, Inter } from "next/font/google";
 import { ServiceWorkerRegister } from "./components/ServiceWorkerRegister";
+import { Toaster } from "./components/Toaster";
 import "./globals.css";
 
 // Editorial serif for headlines and brand voice; clean sans for UI chrome.
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <ServiceWorkerRegister />
         {children}
+        <Toaster />
       </body>
     </html>
   );
