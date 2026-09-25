@@ -88,14 +88,25 @@ export async function generateListingEmail(
 export async function generateEmailCopy(
   type: EmailType,
   brief: string,
+  attachments?: { images?: string[]; pdfs?: string[] },
 ): Promise<EmailCopy> {
   const anthropic = getAnthropic();
   const system = buildSystemPrompt(type);
+
+  // Dusty's uploaded materials (data screenshots, report PDFs) ride along so
+  // Claude reads the actual numbers and sources rather than us transcribing them.
+  const userText = `Write the ${type} email. Here is the brief from the admin:\n\n${brief}\n\nReturn only the JSON.`;
+  const blocks: Anthropic.ContentBlockParam[] = [];
+  for (const url of attachments?.images ?? []) {
+    blocks.push({ type: "image", source: { type: "url", url } });
+  }
+  for (const url of attachments?.pdfs ?? []) {
+    blocks.push({ type: "document", source: { type: "url", url } });
+  }
+  blocks.push({ type: "text", text: userText });
+
   const messages: Anthropic.MessageParam[] = [
-    {
-      role: "user",
-      content: `Write the ${type} email. Here is the brief from the admin:\n\n${brief}\n\nReturn only the JSON.`,
-    },
+    { role: "user", content: blocks },
   ];
 
   let lastError = "";

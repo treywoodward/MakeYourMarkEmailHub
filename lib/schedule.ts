@@ -69,6 +69,34 @@ export function nextListingMonday(
   return monday; // unreachable in practice
 }
 
+/**
+ * The next Monday of a given rotation kind (marketPulse=2nd, education=4th,
+ * listing=1st/3rd) at least `bufferDays` from `from`.
+ */
+export function nextMondayForSlot(
+  kind: SlotKind,
+  from: Date,
+  bufferDays: number = REVIEW_BUFFER_DAYS,
+): Date {
+  const earliest = addDays(from, bufferDays);
+  let monday = mondayOnOrAfter(earliest);
+  for (let i = 0; i < 20; i++) {
+    if (slotForMonday(monday) === kind) return monday;
+    monday = addDays(monday, 7);
+  }
+  return monday;
+}
+
+/** The rotation kind an email type targets. */
+export function slotKindForType(
+  type: "marketPulse" | "education" | "listing" | "holiday",
+): SlotKind {
+  if (type === "marketPulse") return "marketPulse";
+  if (type === "education") return "education";
+  if (type === "holiday") return "flex";
+  return "listing";
+}
+
 /** 'YYYY-MM-DD' in local time (matches how send dates are stored/parsed). */
 export function toYmd(d: Date): string {
   const y = d.getFullYear();

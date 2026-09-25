@@ -145,6 +145,31 @@ export const emailListings = pgTable(
   (t) => [primaryKey({ columns: [t.emailId, t.listingId] })],
 );
 
+// Materials Dusty sends to build the non-listing emails (Market Pulse, education):
+// data screenshots, report PDFs, and typed notes. Collected per target month +
+// type until an email is built from them.
+export const emailMaterials = pgTable(
+  "email_materials",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    month: text("month").notNull(), // 'YYYY-MM' target month
+    targetType: emailType("target_type").notNull(), // marketPulse | education | ...
+    note: text("note"),
+    files: jsonb("files")
+      .$type<{ url: string; name: string; contentType: string }[]>()
+      .notNull()
+      .default([]),
+    usedByEmailId: uuid("used_by_email_id").references(() => emails.id, {
+      onDelete: "set null",
+    }),
+    uploadedBy: text("uploaded_by").references(() => profiles.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("email_materials_target_idx").on(t.month, t.targetType)],
+);
+
 export const comments = pgTable(
   "comments",
   {

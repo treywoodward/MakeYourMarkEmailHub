@@ -201,6 +201,35 @@ export async function createListingEmail(input: {
   return row.id;
 }
 
+/** Create an email of any type from generated copy + rendered HTML. */
+export async function createEmailFromCopy(input: {
+  month: string;
+  slot: EmailSlot;
+  sendDate: string;
+  type: EmailType;
+  copy: EmailCopy;
+  html: string;
+  photos?: string[][];
+}): Promise<string> {
+  const database = requireDb();
+  const [row] = await database
+    .insert(emails)
+    .values({
+      month: input.month,
+      slot: input.slot,
+      type: input.type,
+      sendDate: input.sendDate,
+      status: "in_review",
+      subject: input.copy.subject,
+      previewText: input.copy.previewText,
+      copy: input.copy,
+      html: input.html,
+      photos: input.photos ?? null,
+    })
+    .returning({ id: emails.id });
+  return row.id;
+}
+
 /** Emails currently awaiting the admin's review, most recent send date first. */
 export async function emailsAwaitingReview(): Promise<EmailListItem[]> {
   if (!isDbConfigured || !db) return [];

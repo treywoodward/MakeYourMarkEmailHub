@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { seedMonth } from "@/lib/seed";
 import { formatMonthLabel } from "@/lib/dates";
 import { EmailCard } from "./components/EmailCard";
@@ -5,10 +6,12 @@ import { NotificationsToggle } from "./components/NotificationsToggle";
 import { AppShell } from "./components/AppShell";
 import { DraftsPanel } from "./components/DraftsPanel";
 import { PendingListingsPanel } from "./components/PendingListingsPanel";
+import { MaterialsPanel } from "./components/MaterialsPanel";
 import { TestNotificationButton } from "./components/TestNotificationButton";
 import { requireUser } from "@/lib/auth";
 import { listMonthEmails, emailsAwaitingReview } from "@/lib/data/emails";
 import { pendingListings } from "@/lib/data/listings";
+import { pendingMaterials } from "@/lib/data/materials";
 import { listDrafts } from "@/lib/ghl";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +23,7 @@ export default async function ThisMonthPage() {
   const drafts = isAdmin ? await listDrafts() : [];
   const awaiting = await emailsAwaitingReview();
   const pending = isAdmin ? await pendingListings() : [];
+  const materials = isAdmin ? await pendingMaterials() : [];
   const needsReview = emails.filter(
     (e) => e.status === "in_review" || e.status === "changes_requested",
   ).length;
@@ -49,8 +53,24 @@ export default async function ThisMonthPage() {
           </div>
         </div>
 
+        {/* Mobile-only quick actions (the sidebar has these on desktop) */}
+        <div className="mt-5 flex flex-wrap gap-2 lg:hidden">
+          <Link
+            href="/submit"
+            className="rounded-full bg-navy px-3.5 py-1.5 text-sm font-medium text-white transition hover:bg-navy-700"
+          >
+            Submit a listing
+          </Link>
+          <Link
+            href="/materials"
+            className="rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-sm font-medium text-ink-2 transition hover:border-navy/30 hover:text-ink"
+          >
+            Send market data
+          </Link>
+        </div>
+
         {/* Mobile-only push prompt */}
-        <div className="mt-5 lg:hidden">
+        <div className="mt-3 lg:hidden">
           <NotificationsToggle />
         </div>
 
@@ -59,6 +79,8 @@ export default async function ThisMonthPage() {
         </div>
 
         {isAdmin && <PendingListingsPanel count={pending.length} />}
+
+        {isAdmin && <MaterialsPanel materials={materials} />}
 
         {/* Awaiting review (any month) */}
         {awaiting.length > 0 && (

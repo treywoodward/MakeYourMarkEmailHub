@@ -65,6 +65,13 @@ export function AppShell({
           Submit a listing
         </Link>
 
+        <Link
+          href="/materials"
+          className="mt-2 px-2 text-sm font-medium text-white/55 transition hover:text-white"
+        >
+          Send market data
+        </Link>
+
         <div className="mt-auto pt-6">
           {authEnabled ? (
             <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-4">
