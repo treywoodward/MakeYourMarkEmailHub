@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { extractListingFromScreenshot, type ExtractedListing } from "@/lib/ai/vision";
-import { createListing, type PhotoInput } from "@/lib/data/listings";
+import {
+  createListing,
+  countRecentListings,
+  type PhotoInput,
+} from "@/lib/data/listings";
+import { notifyProfile } from "@/lib/push/send";
 
 const EMPTY: ExtractedListing = {
   address: null,
@@ -52,6 +57,20 @@ export async function submitListing(input: {
       photos: input.photos,
     });
     revalidatePath("/listings");
+
+    // Notify the admin, but only for the FIRST listing of a batch (this one is
+    // already counted), so a run of listings over an hour is one ping, not five.
+    // The "ready to review" ping comes later, once the batch is assembled.
+    if (user.role !== "admin" && (await countRecentListings(60)) <= 1) {
+      const where =
+        extracted.address ?? (input.mlsNumber.trim() || "a new listing");
+      await notifyProfile("admin", {
+        title: "Dusty is adding listings",
+        body: `Starting with ${where}. I will draft the email once they stop coming in.`,
+        url: "/listings",
+      });
+    }
+
     return { listingId };
   } catch (err) {
     return {

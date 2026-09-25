@@ -4,17 +4,22 @@ import { EmailCard } from "./components/EmailCard";
 import { NotificationsToggle } from "./components/NotificationsToggle";
 import { AppShell } from "./components/AppShell";
 import { DraftsPanel } from "./components/DraftsPanel";
+import { PendingListingsPanel } from "./components/PendingListingsPanel";
 import { TestNotificationButton } from "./components/TestNotificationButton";
 import { requireUser } from "@/lib/auth";
-import { listMonthEmails } from "@/lib/data/emails";
+import { listMonthEmails, emailsAwaitingReview } from "@/lib/data/emails";
+import { pendingListings } from "@/lib/data/listings";
 import { listDrafts } from "@/lib/ghl";
 
 export const dynamic = "force-dynamic";
 
 export default async function ThisMonthPage() {
   const user = await requireUser();
+  const isAdmin = user.role === "admin";
   const emails = await listMonthEmails(seedMonth);
-  const drafts = user.role === "admin" ? await listDrafts() : [];
+  const drafts = isAdmin ? await listDrafts() : [];
+  const awaiting = await emailsAwaitingReview();
+  const pending = isAdmin ? await pendingListings() : [];
   const needsReview = emails.filter(
     (e) => e.status === "in_review" || e.status === "changes_requested",
   ).length;
@@ -52,6 +57,23 @@ export default async function ThisMonthPage() {
         <div className="mt-5">
           <TestNotificationButton />
         </div>
+
+        {isAdmin && <PendingListingsPanel count={pending.length} />}
+
+        {/* Awaiting review (any month) */}
+        {awaiting.length > 0 && (
+          <section className="mt-9">
+            <div className="flex items-baseline gap-3">
+              <h2 className="font-serif text-xl text-navy">Awaiting your review</h2>
+              <span className="text-xs text-gold-ink tnums">{awaiting.length}</span>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {awaiting.map((email) => (
+                <EmailCard key={email.id} email={email} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Emails */}
         <div className="mt-7">

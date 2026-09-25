@@ -1,11 +1,12 @@
 // Data-access for submitted listings (Neon).
 import "server-only";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, inArray, notInArray, gte } from "drizzle-orm";
 import { requireDb, isDbConfigured, db } from "@/lib/db";
-import { listings, listingPhotos, profiles } from "@/lib/db/schema";
+import { listings, listingPhotos, emailListings, profiles } from "@/lib/db/schema";
 import type { ListingState } from "@/lib/types";
 import type { AppUser } from "@/lib/auth";
 import type { ExtractedListing } from "@/lib/ai/vision";
+import type { ListingFacts } from "@/lib/ai/generate";
 
 export interface PhotoInput {
   url: string;
@@ -154,6 +155,97 @@ export async function listListings(): Promise<ListingSummary[]> {
     );
     return [];
   }
+}
+
+// ---- listing-email pipeline ----------------------------------------------
+
+/** Listings that are ready and not yet assigned to any email, oldest first. */
+export async function pendingListings(): Promise<
+  { id: string; createdAt: Date }[]
+> {
+  if (!isDbConfigured || !db) return [];
+  try {
+    const assigned = db
+      .select({ id: emailListings.listingId })
+      .from(emailListings);
+    return await db
+      .select({ id: listings.id, createdAt: listings.createdAt })
+      .from(listings)
+      .where(and(eq(listings.state, "ready"), notInArray(listings.id, assigned)))
+      .orderBy(listings.createdAt);
+  } catch (err) {
+    console.error("[data] pendingListings failed", err);
+    return [];
+  }
+}
+
+/** How many listings were submitted in the last `minutes` (for notify debounce). */
+export async function countRecentListings(minutes: number): Promise<number> {
+  if (!isDbConfigured || !db) return 0;
+  try {
+    const since = new Date(Date.now() - minutes * 60_000);
+    const rows = await db
+      .select({ id: listings.id })
+      .from(listings)
+      .where(gte(listings.createdAt, since));
+    return rows.length;
+  } catch (err) {
+    console.error("[data] countRecentListings failed", err);
+    return 0;
+  }
+}
+
+export interface ListingForEmail extends ListingFacts {
+  id: string;
+  galleryUrls: string[]; // hero first, portrait/excluded left out
+}
+
+/** Full facts + gallery URLs for a set of listings, in the given id order. */
+export async function listingsForEmail(
+  ids: string[],
+): Promise<ListingForEmail[]> {
+  if (!ids.length || !isDbConfigured || !db) return [];
+  const rows = await db.select().from(listings).where(inArray(listings.id, ids));
+  const photoRows = await db
+    .select()
+    .from(listingPhotos)
+    .where(inArray(listingPhotos.listingId, ids))
+    .orderBy(listingPhotos.sortOrder);
+
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const galleryById = new Map<string, string[]>();
+  for (const p of photoRows) {
+    if (p.excludedReason || !p.sourceUrl) continue;
+    const arr = galleryById.get(p.listingId) ?? [];
+    // hero to the front, everything else in sort order
+    if (p.isHero) arr.unshift(p.sourceUrl);
+    else arr.push(p.sourceUrl);
+    galleryById.set(p.listingId, arr);
+  }
+
+  return ids
+    .map((id) => byId.get(id))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r))
+    .map((r) => {
+      const galleryUrls = galleryById.get(r.id) ?? [];
+      return {
+        id: r.id,
+        address: r.address,
+        city: r.city,
+        zip: r.zip,
+        neighborhood: r.neighborhood,
+        price: r.price,
+        beds: r.beds,
+        baths: r.baths,
+        sqft: r.sqft,
+        acres: r.acres,
+        statusText: r.statusText,
+        mlsNumber: r.mlsNumber,
+        description: r.descriptionEdited ?? r.descriptionRaw,
+        photoCount: galleryUrls.length,
+        galleryUrls,
+      };
+    });
 }
 
 export async function getListing(id: string): Promise<ListingDetail | null> {

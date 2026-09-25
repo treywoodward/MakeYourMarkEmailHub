@@ -2,9 +2,9 @@
 // falls back to seed data otherwise so the app runs before the DB exists.
 // Writes require the DB.
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db, isDbConfigured, requireDb } from "@/lib/db";
-import { emails, comments, profiles } from "@/lib/db/schema";
+import { emails, comments, profiles, emailListings } from "@/lib/db/schema";
 import { seedEmails } from "@/lib/seed";
 import type { EmailCopy } from "@/lib/email/schemas";
 import type { EmailSlot, EmailStatus, EmailType, UserRole } from "@/lib/types";
@@ -160,6 +160,70 @@ export async function addComment(emailId: string, user: AppUser, body: string) {
   const database = requireDb();
   await ensureProfile(user);
   await database.insert(comments).values({ emailId, authorId: user.id, body });
+}
+
+/** Create a listing email from generated copy + rendered HTML, linking listings. */
+export async function createListingEmail(input: {
+  month: string;
+  slot: EmailSlot;
+  sendDate: string; // 'YYYY-MM-DD'
+  copy: EmailCopy;
+  html: string;
+  photos: string[][];
+  listingIds: string[];
+}): Promise<string> {
+  const database = requireDb();
+  const [row] = await database
+    .insert(emails)
+    .values({
+      month: input.month,
+      slot: input.slot,
+      type: "listing",
+      sendDate: input.sendDate,
+      status: "in_review",
+      subject: input.copy.subject,
+      previewText: input.copy.previewText,
+      copy: input.copy,
+      html: input.html,
+      photos: input.photos,
+    })
+    .returning({ id: emails.id });
+
+  if (input.listingIds.length) {
+    await database.insert(emailListings).values(
+      input.listingIds.map((id, i) => ({
+        emailId: row.id,
+        listingId: id,
+        sortOrder: i,
+      })),
+    );
+  }
+  return row.id;
+}
+
+/** Emails currently awaiting the admin's review, most recent send date first. */
+export async function emailsAwaitingReview(): Promise<EmailListItem[]> {
+  if (!isDbConfigured || !db) return [];
+  try {
+    const rows = await db
+      .select()
+      .from(emails)
+      .where(inArray(emails.status, ["in_review", "changes_requested"]))
+      .orderBy(desc(emails.sendDate));
+    return rows.map((r) => ({
+      id: r.id,
+      month: r.month,
+      slot: r.slot,
+      type: r.type,
+      sendDate: r.sendDate ?? "",
+      status: r.status,
+      subject: r.subject ?? "",
+      previewText: r.previewText ?? "",
+    }));
+  } catch (err) {
+    console.error("[data] emailsAwaitingReview failed", err);
+    return [];
+  }
 }
 
 export async function setEmailStatus(emailId: string, status: EmailStatus) {
